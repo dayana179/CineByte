@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineByte | Journal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <a href="index.html" class="logo">CineByte</a>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="films.html">Films / Videos</a>
+      <a href="lists.html">Lists</a>
+      <a href="journal.html">Journal</a>
+      <a href="profile.html">Profile</a>
+      <a href="auth.html" id="authNav">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-header">
+      <h1>Journal</h1>
+      <p>Record what you watched and write your personal viewing notes.</p>
+    </section>
+
+    <section class="content-section journal-layout">
+      <form class="box" onsubmit="saveJournal(event)">
+        <h2>Add Journal</h2>
+
+        <label>Title</label>
+        <input type="text" id="journalTitle" required>
+
+        <label>Rating</label>
+        <select id="journalRating">
+          <option>★★★★★</option>
+          <option>★★★★☆</option>
+          <option>★★★☆☆</option>
+          <option>★★☆☆☆</option>
+          <option>★☆☆☆☆</option>
+        </select>
+
+        <label>Review</label>
+        <textarea id="journalReview" rows="6" required></textarea>
+
+        <button class="btn" type="submit">Save Journal</button>
+      </form>
+
+      <div class="box">
+        <h2>Added Journal</h2>
+        <div id="journalList"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 CineByte. Web Design Project.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

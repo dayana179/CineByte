@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineByte | Homepage</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <a href="index.html" class="logo">CineByte</a>
+
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="films.html">Films / Videos</a>
+      <a href="lists.html">Lists</a>
+      <a href="journal.html">Journal</a>
+      <a href="profile.html">Profile</a>
+      <a href="auth.html" id="authNav">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <p class="tagline">Film Discovery & Personal Tracking Platform</p>
+        <h1>Track what you watch. Discover what to watch next.</h1>
+        <p>
+          CineByte helps users explore films and YouTube videos, create watchlists,
+          write journals, and organize viewing activities in one place.
+        </p>
+
+        <div class="hero-actions">
+          <a href="films.html" class="btn">Explore Films</a>
+          <a href="journal.html" class="btn btn-secondary">Add Journal</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>Featured Content</h2>
+
+      <div class="card-grid">
+        <article class="movie-card">
+          <img src="https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" alt="Interstellar poster">
+          <div>
+            <h3>Interstellar</h3>
+            <p>Sci-fi • Adventure</p>
+            <a href="film-detail.html?title=Interstellar" class="small-link">View Details</a>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <img src="https://image.tmdb.org/t/p/w500/ptpr0kGAckfQkJeJIt8st5dglvd.jpg" alt="Oppenheimer poster">
+          <div>
+            <h3>Oppenheimer</h3>
+            <p>Drama • History</p>
+            <a href="film-detail.html?title=Oppenheimer" class="small-link">View Details</a>
+          </div>
+        </article>
+
+        <article class="movie-card">
+          <img src="https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg" alt="The Batman poster">
+          <div>
+            <h3>The Batman</h3>
+            <p>Action • Crime</p>
+            <a href="film-detail.html?title=The Batman" class="small-link">View Details</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 CineByte. Web Design Project.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

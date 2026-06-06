@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineByte | Film Detail</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <a href="index.html" class="logo">CineByte</a>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="films.html">Films / Videos</a>
+      <a href="lists.html">Lists</a>
+      <a href="journal.html">Journal</a>
+      <a href="profile.html">Profile</a>
+      <a href="auth.html" id="authNav">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="detail-layout">
+      <div>
+        <img id="detailPoster" class="detail-poster" src="" alt="Film poster">
+      </div>
+
+      <div class="detail-info">
+        <h1 id="detailTitle">Film Title</h1>
+        <p id="detailGenre">Genre</p>
+        <p id="detailDesc">
+          This page displays the selected movie or YouTube video details.
+        </p>
+
+        <div class="video-box">
+          <iframe
+            src="https://www.youtube.com/embed/zSWdZVtXT7E"
+            title="YouTube trailer"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <button class="btn" onclick="addToWatchlist()">Add to Watchlist</button>
+        <a href="journal.html" class="btn btn-secondary">Write Journal</a>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>User Reviews</h2>
+
+      <article class="review-box">
+        <strong>Sample User</strong>
+        <p>Great visual style and strong storytelling. Worth watching.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 CineByte. Web Design Project.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

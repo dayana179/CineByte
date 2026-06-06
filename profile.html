@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineByte | Profile</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <a href="index.html" class="logo">CineByte</a>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="films.html">Films / Videos</a>
+      <a href="lists.html">Lists</a>
+      <a href="journal.html">Journal</a>
+      <a href="profile.html">Profile</a>
+      <a href="auth.html" id="authNav">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-header">
+      <h1>User Profile</h1>
+      <p>Manage your account, watchlist, journal entries, created lists, and settings.</p>
+    </section>
+
+    <section class="content-section profile-layout">
+      <aside class="profile-sidebar">
+        <h2>Profile Menu</h2>
+        <a href="#profileInfo">Profile</a>
+        <a href="#watchlist">To Watch List</a>
+        <a href="#created">Created List</a>
+        <a href="#journal">Added Journal</a>
+        <a href="#settings">Settings</a>
+      </aside>
+
+      <div class="profile-content">
+        <section id="profileInfo" class="box">
+          <h2>Profile</h2>
+          <p><strong>Username:</strong> CineByte User</p>
+          <p><strong>Email:</strong> user@example.com</p>
+        </section>
+
+        <section id="watchlist" class="box">
+          <h2>To Watch List</h2>
+          <ul id="profileWatchlist"></ul>
+        </section>
+
+        <section id="created" class="box">
+          <h2>Created List</h2>
+          <ul id="profileLists"></ul>
+        </section>
+
+        <section id="journal" class="box">
+          <h2>Added Journal</h2>
+          <div id="profileJournals"></div>
+        </section>
+
+        <section id="settings" class="box">
+          <h2>Settings</h2>
+          <p>Theme: Dark mode</p>
+          <p>Notification: Enabled</p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 CineByte. Web Design Project.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

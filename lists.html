@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineByte | Lists</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <a href="index.html" class="logo">CineByte</a>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="films.html">Films / Videos</a>
+      <a href="lists.html">Lists</a>
+      <a href="journal.html">Journal</a>
+      <a href="profile.html">Profile</a>
+      <a href="auth.html" id="authNav">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-header">
+      <h1>Lists</h1>
+      <p>Explore featured lists, top picks, most watched content, and create your own list.</p>
+    </section>
+
+    <section class="content-section">
+      <div class="list-grid">
+        <article class="list-card">
+          <h2>Featured</h2>
+          <p>Curated films and videos recommended by CineByte.</p>
+        </article>
+
+        <article class="list-card">
+          <h2>Top 5</h2>
+          <p>Popular top-rated content based on user activity.</p>
+        </article>
+
+        <article class="list-card">
+          <h2>Most Watched</h2>
+          <p>Content that receives the highest viewing attention.</p>
+        </article>
+
+        <article class="list-card">
+          <h2>Create Your Own List</h2>
+          <input type="text" id="listName" placeholder="Enter list name">
+          <button class="btn" onclick="createList()">Create List</button>
+        </article>
+      </div>
+
+      <div class="box">
+        <h2>Your Created Lists</h2>
+        <ul id="createdLists"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 CineByte. Web Design Project.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
