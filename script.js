@@ -86,7 +86,7 @@ function updateAuthNav() {
 }
 
 function protectPage() {
-  const protectedPages = ["journal.html", "profile.html"];
+  const protectedPages = ["journal.php", "profile.html"];
   const currentPage = window.location.pathname.split("/").pop();
   const user = getCurrentUser();
 
@@ -157,7 +157,7 @@ function loadFilmDetails() {
 
   if (journalBtn) {
     journalBtn.href = 
-      `journal.html?movie=${encodeURIComponent(movie.title)}`;
+      `journal.php?movie=${encodeURIComponent(movie.title)}`;
   }
   }
 }
