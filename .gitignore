@@ -1,0 +1,10 @@
+# Never commit your API keys or DB password
+db/connection.php
+
+# Common OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/

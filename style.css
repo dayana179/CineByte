@@ -341,3 +341,22 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+/* =====================
+   JOURNAL
+===================== */
+
+.journal-poster {
+  width: 100px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+/* Light mode */
+body.light-mode { background: #f4f4f4; color: #111; }
+body.light-mode .site-header, body.light-mode footer { background: #fff; border-color: #ddd; }
+body.light-mode .movie-card, body.light-mode .list-card,
+body.light-mode .box, body.light-mode .review-box { background: #fff; border-color: #ddd; }
+body.light-mode nav a, body.light-mode .profile-sidebar a { color: #333; }
+body.light-mode input, body.light-mode textarea, body.light-mode select { background: #f9f9f9; color: #111; border-color: #ccc; }
