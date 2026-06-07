@@ -341,3 +341,15 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+/* =====================
+   JOURNAL
+===================== */
+
+.journal-poster {
+  width: 100px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}

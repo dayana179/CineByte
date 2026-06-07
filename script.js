@@ -153,6 +153,12 @@ function loadFilmDetails() {
     document.getElementById("detailGenre").textContent = movie.genre;
     document.getElementById("detailPoster").src = movie.poster;
     document.getElementById("detailDesc").textContent = movie.desc;
+    const journalBtn = document.getElementById("journalBtn");
+
+  if (journalBtn) {
+    journalBtn.href = 
+      `journal.html?movie=${encodeURIComponent(movie.title)}`;
+  }
   }
 }
 
@@ -236,14 +242,22 @@ function saveJournal(event) {
     return;
   }
 
-  const title = document.getElementById("journalTitle").value.trim();
+  const movieTitle = document.getElementById("journalMovie").value;
+  const movie = movies[movieTitle];
+
   const rating = document.getElementById("journalRating").value;
   const review = document.getElementById("journalReview").value.trim();
 
   const key = userKey("journals");
   let journals = JSON.parse(localStorage.getItem(key)) || [];
 
-  journals.push({ title, rating, review });
+  journals.push({
+    title: movie.title,
+    genre: movie.genre,
+    poster: movie.poster,
+    rating: rating,
+    review: review
+  });
 
   localStorage.setItem(key, JSON.stringify(journals));
 
@@ -261,7 +275,13 @@ function displayJournals() {
   journalList.innerHTML = journals.length
     ? journals.map(entry => `
         <article class="review-box">
+          <img 
+            src="${entry.poster}" 
+            alt="${entry.title} poster" 
+            class="journal-poster"
+          >
           <h3>${entry.title}</h3>
+          <p>${entry.genre}</p>
           <p>${entry.rating}</p>
           <p>${entry.review}</p>
         </article>
@@ -319,9 +339,21 @@ function loadProfileData() {
    INIT
 ===================== */
 
+function loadJournalMovie() {
+  const params = new URLSearchParams(window.location.search);
+  const movie = params.get("movie");
+
+  const select = document.getElementById("journalMovie");
+
+  if (movie && select) {
+    select.value = movie;
+  }
+}
+
 updateAuthNav();
 protectPage();
 loadFilmDetails();
 displayLists();
 displayJournals();
+loadJournalMovie();
 loadProfileData();

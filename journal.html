@@ -32,8 +32,13 @@
       <form class="box" onsubmit="saveJournal(event)">
         <h2>Add Journal</h2>
 
-        <label>Title</label>
-        <input type="text" id="journalTitle" required>
+        <label>Select Movie</label>
+        <select id="journalMovie" required>
+          <option value="Interstellar">Interstellar</option>
+          <option value="Oppenheimer">Oppenheimer</option>
+          <option value="The Batman">The Batman</option>
+          <option value="Dune">Dune</option>
+        </select>
 
         <label>Rating</label>
         <select id="journalRating">
