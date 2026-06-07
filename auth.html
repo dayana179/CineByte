@@ -16,7 +16,7 @@
       <a href="index.html">Home</a>
       <a href="films.html">Films / Videos</a>
       <a href="lists.html">Lists</a>
-      <a href="journal.html">Journal</a>
+      <a href="journal.php">Journal</a>
       <a href="profile.html">Profile</a>
       <a href="auth.html" id="authNav">Login</a>
     </nav>

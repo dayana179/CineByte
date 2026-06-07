@@ -16,7 +16,7 @@
       <a href="index.html">Home</a>
       <a href="films.html">Films / Videos</a>
       <a href="lists.html">Lists</a>
-      <a href="journal.html">Journal</a>
+      <a href="journal.php">Journal</a>
       <a href="profile.html">Profile</a>
       <a href="auth.html" id="authNav">Login</a>
     </nav>
@@ -32,8 +32,13 @@
       <form class="box" onsubmit="saveJournal(event)">
         <h2>Add Journal</h2>
 
-        <label>Title</label>
-        <input type="text" id="journalTitle" required>
+        <label>Select Movie</label>
+        <select id="journalMovie" required>
+          <option value="Interstellar">Interstellar</option>
+          <option value="Oppenheimer">Oppenheimer</option>
+          <option value="The Batman">The Batman</option>
+          <option value="Dune">Dune</option>
+        </select>
 
         <label>Rating</label>
         <select id="journalRating">
