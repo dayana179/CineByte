@@ -3,65 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CineByte | Film Detail</title>
+  <title>CineByte | Films</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <header class="site-header">
-    <a href="index.html" class="logo">CineByte</a>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
 
-    <nav id="mainNav">
-      <a href="index.html">Home</a>
-      <a href="films.html">Films / Videos</a>
-      <a href="lists.html">Lists</a>
-      <a href="journal.php">Journal</a>
-      <a href="profile.html">Profile</a>
-      <a href="auth.html" id="authNav">Login</a>
-    </nav>
-  </header>
+<header class="site-header">
+  <a href="index.html" class="logo">CineByte</a>
 
-  <main>
-    <section class="detail-layout">
-      <div>
-        <img id="detailPoster" class="detail-poster" src="" alt="Film poster">
-      </div>
+  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
 
-      <div class="detail-info">
-        <h1 id="detailTitle">Film Title</h1>
-        <p id="detailGenre">Genre</p>
-        <p id="detailDesc">
-          This page displays the selected movie or YouTube video details.
-        </p>
+  <nav id="mainNav">
+    <a href="index.html">Home</a>
+    <a href="films.html">Films</a>
+    <a href="lists.html">Lists</a>
+    <a href="journal.php">Journal</a>
+    <a href="profile.html">Profile</a>
+    <a href="auth.html" id="authNav">Login</a>
+  </nav>
+</header>
 
-        <div class="video-box">
-          <iframe
-            src="https://www.youtube.com/embed/zSWdZVtXT7E"
-            title="YouTube trailer"
-            allowfullscreen>
-          </iframe>
-        </div>
+<main>
+  <section class="content-section">
+    <h2>All Movies</h2>
 
-        <button class="btn" onclick="addToWatchlist()">Add to Watchlist</button>
-        <a href="journal.php" class="btn btn-secondary">Write Journal</a>
-      </div>
-    </section>
+    <!-- API MOVIES GO HERE -->
+    <div class="card-grid movie-container"></div>
+  </section>
+</main>
 
-    <section class="content-section">
-      <h2>User Reviews</h2>
+<footer>
+  <p>&copy; 2026 CineByte</p>
+</footer>
 
-      <article class="review-box">
-        <strong>Sample User</strong>
-        <p>Great visual style and strong storytelling. Worth watching.</p>
-      </article>
-    </section>
-  </main>
-
-  <footer>
-    <p>&copy; 2026 CineByte. Web Design Project.</p>
-  </footer>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
