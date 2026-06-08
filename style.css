@@ -628,7 +628,6 @@ nav a,
     padding: 0;
     margin: 0;
     height: auto;
-    justify-content: flex-start;
     color: #ddd;
   }
 
@@ -641,5 +640,38 @@ nav a,
     position: static;
     width: 100%;
     margin-top: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  #mainNav {
+    align-items: center;
+    text-align: center;
+  }
+
+  #mainNav .header-search {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #mainNav .header-search-btn {
+    width: 100%;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #mainNav .search-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  #mainNav .header-search-box {
+    position: static;
+    width: min(90%, 320px);
+    margin: 10px auto 0;
   }
 }
