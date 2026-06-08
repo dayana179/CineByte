@@ -352,7 +352,6 @@ footer {
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 10px;
-<<<<<<< HEAD
 }
 /* Light mode */
 body.light-mode { background: #f4f4f4; color: #111; }
@@ -361,6 +360,255 @@ body.light-mode .movie-card, body.light-mode .list-card,
 body.light-mode .box, body.light-mode .review-box { background: #fff; border-color: #ddd; }
 body.light-mode nav a, body.light-mode .profile-sidebar a { color: #333; }
 body.light-mode input, body.light-mode textarea, body.light-mode select { background: #f9f9f9; color: #111; border-color: #ccc; }
-=======
+
+/* =====================
+   HEADER SEARCH
+===================== */
+
+/* =====================
+   MINIMAL HEADER SEARCH
+===================== */
+
+.header-search {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
->>>>>>> 8866ed962a20c841d042d89cdba874f699c95b21
+
+.header-search-btn {
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  color: #ddd;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-search-btn:hover {
+  color: #ff3c3c;
+}
+
+.search-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: currentColor;
+}
+
+.header-search-box {
+  position: absolute;
+  top: 34px;
+  right: 0;
+  width: 310px;
+  background: #181e26;
+  border: 1px solid #2b323d;
+  border-radius: 12px;
+  padding: 10px;
+  display: none;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.header-search-box.show {
+  display: block;
+}
+
+.header-search-box input {
+  margin-bottom: 8px;
+}
+
+.header-search-results {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.header-result-item {
+  display: flex;
+  gap: 10px;
+  padding: 9px;
+  border-radius: 8px;
+}
+
+.header-result-item:hover {
+  background: #222a35;
+}
+
+.header-result-item img {
+  width: 42px;
+  height: 62px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.header-result-info h4 {
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.header-result-info p {
+  color: #aaa;
+  font-size: 12px;
+}
+
+.header-search-empty {
+  color: #aaa;
+  font-size: 13px;
+  padding: 8px;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+nav a,
+.header-search-btn {
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* =====================
+   FILMS PAGE
+===================== */
+
+.films-page-header {
+  border-bottom: 1px solid #2b323d;
+}
+
+.film-browser-section {
+  padding-top: 35px;
+}
+
+.film-browser-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.film-main-search {
+  display: flex;
+  gap: 10px;
+  width: min(520px, 100%);
+}
+
+.film-main-search input {
+  margin-bottom: 0;
+}
+
+.film-main-search .btn {
+  min-width: 100px;
+}
+
+.film-toolbar {
+  background: #181e26;
+  border: 1px solid #2b323d;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.filter-group label {
+  display: block;
+  color: #aaa;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.filter-group input,
+.filter-group select {
+  margin-bottom: 0;
+}
+
+.poster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 22px;
+}
+
+.poster-card {
+  background: transparent;
+}
+
+.poster-card a {
+  display: block;
+}
+
+.poster-card img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 9px;
+  border: 1px solid #2b323d;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.poster-card img:hover {
+  transform: translateY(-4px);
+  border-color: #ff3c3c;
+}
+
+.poster-card h3 {
+  font-size: 15px;
+  margin-top: 9px;
+  line-height: 1.25;
+}
+
+.poster-card p {
+  color: #aaa;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.muted-text {
+  color: #bbb;
+  margin-bottom: 18px;
+}
+
+.load-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 35px;
+}
+
+@media (max-width: 900px) {
+  .film-browser-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .film-main-search {
+    width: 100%;
+  }
+
+  .film-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-search {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .header-search-btn {
+    padding: 10px 0;
+  }
+
+  .header-search-box {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+  }
+}
