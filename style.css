@@ -612,3 +612,34 @@ nav a,
     margin-top: 8px;
   }
 }
+
+/* =====================
+   FIX MOBILE HEADER SEARCH ALIGNMENT
+===================== */
+
+@media (max-width: 768px) {
+  nav .header-search {
+    width: 100%;
+    display: block;
+  }
+
+  nav .header-search-btn {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    height: auto;
+    justify-content: flex-start;
+    color: #ddd;
+  }
+
+  nav .search-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  nav .header-search-box {
+    position: static;
+    width: 100%;
+    margin-top: 12px;
+  }
+}
