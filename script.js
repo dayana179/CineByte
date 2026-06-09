@@ -240,7 +240,7 @@ async function searchHeaderMovies(query) {
 }
 
 // =====================
-// FILMS PAGE: LETTERBOXD-LIKE BROWSER
+// FILMS PAGE
 // =====================
 let filmPage = 1;
 let filmTotalPages = 1;
@@ -497,6 +497,468 @@ async function loadMovieDetails() {
 }
 
 // =====================
+// LISTS PAGE: CATEGORIES + DATABASE USER LISTS
+// =====================
+let listCategoryPage = 1;
+let currentCategoryType = "popular";
+let currentGenreId = "";
+let currentCategoryName = "Popular Movies";
+let listCategoryTotalPages = 1;
+let databaseUserLists = [];
+
+function getLoggedInUser() {
+  return JSON.parse(localStorage.getItem("cinebyteCurrentUser"));
+}
+
+function getLoggedInUserId() {
+  const user = getLoggedInUser();
+  return user && user.id ? user.id : null;
+}
+
+function getCategoryUrl() {
+  if (currentGenreId) {
+    return `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${currentGenreId}&sort_by=popularity.desc&page=${listCategoryPage}`;
+  }
+
+  return `${BASE_URL}/movie/${currentCategoryType}?api_key=${API_KEY}&page=${listCategoryPage}`;
+}
+
+async function fetchUserListsFromDatabase() {
+  const userId = getLoggedInUserId();
+
+  if (!userId) {
+    databaseUserLists = [];
+    renderUserLists();
+    return;
+  }
+
+  try {
+    const res = await fetch(`api/lists.php?action=get&user_id=${userId}`);
+    const data = await res.json();
+
+    if (data.success) {
+      databaseUserLists = data.lists;
+      renderUserLists();
+    }
+  } catch (err) {
+    console.error("Error fetching user lists:", err);
+  }
+}
+
+async function loadCategoryMovies(append = false) {
+  const grid = document.getElementById("categoryMovieGrid");
+  const title = document.getElementById("categoryTitle");
+  const status = document.getElementById("categoryStatus");
+  const loadMoreBtn = document.getElementById("loadMoreCategoryBtn");
+
+  if (!grid) return;
+
+  try {
+    if (title) {
+      title.textContent = currentCategoryName;
+    }
+
+    if (status) {
+      status.textContent = "Loading movies...";
+    }
+
+    if (loadMoreBtn) {
+      loadMoreBtn.disabled = true;
+      loadMoreBtn.textContent = "Loading...";
+    }
+
+    const res = await fetch(getCategoryUrl());
+    const data = await res.json();
+
+    listCategoryTotalPages = data.total_pages || 1;
+
+    if (!append) {
+      grid.innerHTML = "";
+    }
+
+    if (!data.results || data.results.length === 0) {
+      grid.innerHTML = `<p class="muted-text">No movies found for this category.</p>`;
+
+      if (status) status.textContent = "";
+      if (loadMoreBtn) loadMoreBtn.style.display = "none";
+
+      return;
+    }
+
+    data.results.forEach((movie) => {
+      grid.appendChild(createListMovieCard(movie));
+    });
+
+    if (status) {
+      status.textContent = `Showing ${currentCategoryName.toLowerCase()}`;
+    }
+
+    if (loadMoreBtn) {
+      loadMoreBtn.disabled = false;
+      loadMoreBtn.textContent = "Load More";
+      loadMoreBtn.style.display =
+        listCategoryPage >= listCategoryTotalPages ? "none" : "inline-block";
+    }
+  } catch (err) {
+    console.error("Error loading category movies:", err);
+
+    if (status) {
+      status.textContent = "Unable to load movies. Please try again.";
+    }
+
+    if (loadMoreBtn) {
+      loadMoreBtn.disabled = false;
+      loadMoreBtn.textContent = "Load More";
+    }
+  }
+}
+
+function createListMovieCard(movie) {
+  const card = document.createElement("div");
+  card.classList.add("poster-card");
+
+  const userId = getLoggedInUserId();
+  const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "N/A";
+
+  let listOptions = `<option value="">Add to list...</option>`;
+
+  databaseUserLists.forEach((list) => {
+    listOptions += `<option value="${list.id}">${list.list_name}</option>`;
+  });
+
+  let addToListHTML = "";
+
+  if (!userId) {
+    addToListHTML = `
+      <p class="login-required-note">
+        Login to add this movie to a list.
+      </p>
+    `;
+  } else if (databaseUserLists.length > 0) {
+    addToListHTML = `
+      <div class="add-to-list-area">
+        <select class="movie-list-select">
+          ${listOptions}
+        </select>
+        <button class="btn add-to-list-btn" type="button">Add</button>
+      </div>
+    `;
+  } else {
+    addToListHTML = `
+      <p class="login-required-note">
+        Create a list first.
+      </p>
+    `;
+  }
+
+  card.innerHTML = `
+    <a href="film-detail.html?id=${movie.id}">
+      <img src="${getPosterPath(movie)}" alt="${movie.title}">
+      <h3>${movie.title}</h3>
+      <p>${getMovieYear(movie)} • ⭐ ${rating}</p>
+    </a>
+
+    ${addToListHTML}
+  `;
+
+  const select = card.querySelector(".movie-list-select");
+  const addBtn = card.querySelector(".add-to-list-btn");
+
+  if (select && addBtn) {
+    addBtn.addEventListener("click", function () {
+      const selectedListId = select.value;
+
+      if (!selectedListId) {
+        alert("Please choose a list first.");
+        return;
+      }
+
+      addMovieToDatabaseList(selectedListId, movie);
+      select.value = "";
+    });
+  }
+
+  return card;
+}
+
+async function createDatabaseList(listName) {
+  const userId = getLoggedInUserId();
+
+  if (!userId) {
+    alert("Please login first before creating a list.");
+    window.location.href = "auth.html";
+    return;
+  }
+
+  try {
+    const res = await fetch("api/lists.php?action=create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        list_name: listName
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      await fetchUserListsFromDatabase();
+      await loadCategoryMovies(false);
+    } else {
+      alert(data.message || "Unable to create list.");
+    }
+  } catch (err) {
+    console.error("Error creating list:", err);
+    alert("Unable to create list.");
+  }
+}
+
+async function addMovieToDatabaseList(listId, movie) {
+  try {
+    const res = await fetch("api/lists.php?action=add_movie", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        list_id: listId,
+        tmdb_id: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        release_date: movie.release_date,
+        vote_average: movie.vote_average
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      await fetchUserListsFromDatabase();
+      alert(`"${movie.title}" added to list.`);
+    } else {
+      alert(data.message || "Unable to add movie.");
+    }
+  } catch (err) {
+    console.error("Error adding movie:", err);
+    alert("Unable to add movie.");
+  }
+}
+
+async function deleteDatabaseList(listId) {
+  const confirmDelete = confirm("Delete this list?");
+
+  if (!confirmDelete) return;
+
+  try {
+    const res = await fetch("api/lists.php?action=delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        list_id: listId
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      await fetchUserListsFromDatabase();
+      await loadCategoryMovies(false);
+    } else {
+      alert(data.message || "Unable to delete list.");
+    }
+  } catch (err) {
+    console.error("Error deleting list:", err);
+    alert("Unable to delete list.");
+  }
+}
+
+async function removeMovieFromDatabaseList(listId, tmdbId) {
+  try {
+    const res = await fetch("api/lists.php?action=remove_movie", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        list_id: listId,
+        tmdb_id: tmdbId
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      await fetchUserListsFromDatabase();
+    } else {
+      alert(data.message || "Unable to remove movie.");
+    }
+  } catch (err) {
+    console.error("Error removing movie:", err);
+    alert("Unable to remove movie.");
+  }
+}
+
+function renderUserLists() {
+  const grid = document.getElementById("userListsGrid");
+
+  if (!grid) return;
+
+  const userId = getLoggedInUserId();
+
+  if (!userId) {
+    grid.innerHTML = `
+      <p class="empty-list-message">
+        Please login to create and view your movie lists.
+      </p>
+    `;
+    return;
+  }
+
+  if (!databaseUserLists.length) {
+    grid.innerHTML = `
+      <p class="empty-list-message">
+        No lists created yet. Create your first list from the form on the left.
+      </p>
+    `;
+    return;
+  }
+
+  grid.innerHTML = "";
+
+  databaseUserLists.forEach((list) => {
+    const card = document.createElement("div");
+    card.classList.add("user-list-card");
+
+    const movieCount = list.movies ? list.movies.length : 0;
+
+    let moviesHTML = "";
+
+    if (movieCount > 0) {
+      moviesHTML = `
+        <div class="list-movie-preview-grid">
+          ${list.movies
+            .slice(0, 4)
+            .map((movie) => {
+              const poster = movie.poster_path
+                ? IMG_URL + movie.poster_path
+                : "https://via.placeholder.com/500x750?text=No+Poster";
+
+              return `
+                <div class="list-movie-preview">
+                  <a href="film-detail.html?id=${movie.tmdb_id}">
+                    <img src="${poster}" alt="${movie.title}">
+                  </a>
+                  <button
+                    type="button"
+                    class="remove-list-movie-btn"
+                    data-list-id="${list.id}"
+                    data-tmdb-id="${movie.tmdb_id}"
+                  >
+                    Remove
+                  </button>
+                </div>
+              `;
+            })
+            .join("")}
+        </div>
+      `;
+    } else {
+      moviesHTML = `<p class="muted-text">No movies added yet.</p>`;
+    }
+
+    card.innerHTML = `
+      <h3>${list.list_name}</h3>
+      <div class="user-list-meta">${movieCount} movie${movieCount === 1 ? "" : "s"}</div>
+
+      ${moviesHTML}
+
+      <button type="button" class="delete-list-btn">Delete List</button>
+    `;
+
+    const deleteBtn = card.querySelector(".delete-list-btn");
+
+    deleteBtn.addEventListener("click", function () {
+      deleteDatabaseList(list.id);
+    });
+
+    card.querySelectorAll(".remove-list-movie-btn").forEach((button) => {
+      button.addEventListener("click", function () {
+        const listId = button.dataset.listId;
+        const tmdbId = button.dataset.tmdbId;
+
+        removeMovieFromDatabaseList(listId, tmdbId);
+      });
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+function setupCreateListForm() {
+  const form = document.getElementById("createListForm");
+  const titleInput = document.getElementById("listTitleInput");
+
+  if (!form || !titleInput) return;
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const title = titleInput.value.trim();
+
+    if (!title) return;
+
+    createDatabaseList(title);
+
+    titleInput.value = "";
+  });
+}
+
+function setupCategoryButtons() {
+  const buttons = document.querySelectorAll(".category-btn");
+  const loadMoreBtn = document.getElementById("loadMoreCategoryBtn");
+
+  if (!buttons.length) return;
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", function () {
+      buttons.forEach((btn) => btn.classList.remove("active"));
+      button.classList.add("active");
+
+      listCategoryPage = 1;
+      currentGenreId = button.dataset.genre || "";
+      currentCategoryType = button.dataset.type || "";
+      currentCategoryName = button.textContent.trim() + " Movies";
+
+      loadCategoryMovies(false);
+    });
+  });
+
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener("click", function () {
+      listCategoryPage++;
+      loadCategoryMovies(true);
+    });
+  }
+}
+
+async function setupListsPage() {
+  const listsPage = document.getElementById("categoryMovieGrid");
+
+  if (!listsPage) return;
+
+  setupCategoryButtons();
+  setupCreateListForm();
+
+  await fetchUserListsFromDatabase();
+  await loadCategoryMovies(false);
+}
+
+// =====================
 // INIT
 // =====================
 updateAuthNav();
@@ -504,3 +966,4 @@ loadMovies();
 setupHeaderSearch();
 setupFilmBrowser();
 loadMovieDetails();
+setupListsPage();
