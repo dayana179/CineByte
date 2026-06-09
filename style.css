@@ -675,3 +675,45 @@ nav a,
     margin: 10px auto 0;
   }
 }
+
+/* =====================
+   LISTS PAGE
+===================== */
+
+.login-required-note {
+  color: #aaa;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.list-movie-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.list-movie-preview img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 7px;
+  border: 1px solid #2b323d;
+}
+
+.remove-list-movie-btn {
+  width: 100%;
+  margin-top: 5px;
+  padding: 5px;
+  font-size: 11px;
+  background: transparent;
+  border: 1px solid #333b47;
+  color: #bbb;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.remove-list-movie-btn:hover {
+  color: #ff3c3c;
+  border-color: #ff3c3c;
+}

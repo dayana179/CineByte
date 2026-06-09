@@ -35,6 +35,19 @@ CREATE TABLE IF NOT EXISTS user_lists (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS list_movies (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    list_id     INT          NOT NULL,
+    tmdb_id     INT          NOT NULL,
+    title       VARCHAR(255) NOT NULL,
+    poster_path VARCHAR(500) DEFAULT NULL,
+    release_date VARCHAR(20) DEFAULT NULL,
+    vote_average DECIMAL(3,1) DEFAULT NULL,
+    added_at    DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (list_id) REFERENCES user_lists(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_list_movie (list_id, tmdb_id)
+);
+
 CREATE TABLE IF NOT EXISTS journals (
     id         INT AUTO_INCREMENT PRIMARY KEY,
     user_id    INT       NOT NULL,
@@ -46,3 +59,4 @@ CREATE TABLE IF NOT EXISTS journals (
     created_at DATETIME  DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
