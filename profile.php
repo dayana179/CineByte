@@ -65,7 +65,6 @@ $stmt = $db->prepare('SELECT * FROM journals WHERE user_id=? ORDER BY created_at
 $stmt->execute([$uid]);
 $journals = $stmt->fetchAll();
 
-$stars = ['','★☆☆☆☆','★★☆☆☆','★★★☆☆','★★★★☆','★★★★★'];
 ?>
 <?php include 'includes/header.php'; ?>
 
@@ -151,7 +150,7 @@ $stars = ['','★☆☆☆☆','★★☆☆☆','★★★☆☆','★★★★
           <?php foreach ($journals as $j): ?>
             <article class="review-box" style="margin-bottom:16px;">
               <h3><?= e($j['title']) ?></h3>
-              <p style="color:#ffc84a;"><?= $stars[(int)$j['rating']] ?></p>
+              <p style="color:#ffc84a;">⭐ <?= (int)$j['rating'] ?>/10</p>
               <p style="color:#ccc;"><?= e($j['review']) ?></p>
               <small style="color:#666;"><?= e(date('d M Y', strtotime($j['created_at']))) ?></small>
             </article>
