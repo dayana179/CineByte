@@ -111,7 +111,7 @@ function movieCard(array $m): string {
       </div>
     <?php else: ?>
       <div class="box">
-        <p>Please <a href="auth.php" style="color:#ff3c3c;">login</a> to create your own lists.</p>
+        <p>Please <a href="login.php" style="color:#ff3c3c;">login</a> to create your own lists.</p>
       </div>
     <?php endif; ?>
   </section>

@@ -362,10 +362,6 @@ body.light-mode nav a, body.light-mode .profile-sidebar a { color: #333; }
 body.light-mode input, body.light-mode textarea, body.light-mode select { background: #f9f9f9; color: #111; border-color: #ccc; }
 
 /* =====================
-   HEADER SEARCH
-===================== */
-
-/* =====================
    MINIMAL HEADER SEARCH
 ===================== */
 
@@ -716,4 +712,70 @@ nav a,
 .remove-list-movie-btn:hover {
   color: #ff3c3c;
   border-color: #ff3c3c;
+}
+
+/* =====================
+   AUTH PAGE
+===================== */
+
+.auth-message {
+  width: 86%;
+  margin: 0 auto 20px;
+  padding: 14px 18px;
+  background: #2a1d1d;
+  border: 1px solid #ff3c3c;
+  color: #ffb3b3;
+  border-radius: 10px;
+}
+
+.user-status {
+  color: #ffb000;
+  font-weight: bold;
+}
+
+.auth-single-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.auth-card {
+  width: min(430px, 100%);
+}
+
+.auth-card h2 {
+  margin-bottom: 20px;
+}
+
+.auth-switch {
+  margin-top: 18px;
+  color: #c9c9c9;
+}
+
+.auth-switch a {
+  color: #ff3c3c;
+  font-weight: bold;
+}
+
+.auth-message {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  background: #2a1d1d;
+  border: 1px solid #ff3c3c;
+  color: #ffb3b3;
+  border-radius: 8px;
+}
+
+/* FORGOT PASSWORD
+===================== */
+.forgot-password-link {
+  display: inline-block;
+  margin: -8px 0 18px;
+  color: #ff3c3c;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.forgot-password-link:hover {
+  color: #ffc84a;
 }

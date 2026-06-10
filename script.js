@@ -22,28 +22,28 @@ const BASE_URL = "https://api.themoviedb.org/3";
 const IMG_URL = "https://image.tmdb.org/t/p/w500";
 
 // =====================
-// AUTH NAV
+// AUTH NAV WITH PHP SESSION
 // =====================
-function getCurrentUser() {
-  return JSON.parse(localStorage.getItem("cinebyteCurrentUser"));
-}
-
-function updateAuthNav() {
+async function updateAuthNav() {
   const authNav = document.getElementById("authNav");
-  const user = getCurrentUser();
-
   if (!authNav) return;
 
-  if (user) {
-    authNav.textContent = "Logout";
-    authNav.href = "#";
-    authNav.onclick = () => {
-      localStorage.removeItem("cinebyteCurrentUser");
-      location.reload();
-    };
-  } else {
+  try {
+    const res = await fetch("auth_status.php");
+    const data = await res.json();
+
+    if (data.loggedIn) {
+      authNav.textContent = "Logout";
+      authNav.href = "logout.php";
+      authNav.onclick = null;
+    } else {
+      authNav.textContent = "Login";
+      authNav.href = "login.html";
+      authNav.onclick = null;
+    }
+  } catch (err) {
     authNav.textContent = "Login";
-    authNav.href = "auth.html";
+    authNav.href = "login.html";
   }
 }
 
@@ -686,7 +686,7 @@ async function createDatabaseList(listName) {
 
   if (!userId) {
     alert("Please login first before creating a list.");
-    window.location.href = "auth.html";
+    window.location.href = "login.html";
     return;
   }
 

@@ -24,7 +24,7 @@ $watchlistMsg = '';
 
 // Handle Add to Watchlist
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_watchlist') {
-    if (!isLoggedIn()) redirect('auth.php');
+    if (!isLoggedIn()) redirect('login.php');
     $db   = getDB();
     $stmt = $db->prepare(
         'INSERT IGNORE INTO watchlist (user_id, tmdb_id, title, poster_path) VALUES (?, ?, ?, ?)'
