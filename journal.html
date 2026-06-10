@@ -49,44 +49,29 @@
   </header>
 
   <main>
-    <section class="page-header">
-      <h1>Journal</h1>
-      <p>Record what you watched and write your personal viewing notes.</p>
-    </section>
+  <section class="page-header">
+    <h1>Journal</h1>
+    <p>Record what you watched and write your personal viewing notes.</p>
+  </section>
 
-    <section class="content-section journal-layout">
-      <form class="box" onsubmit="saveJournal(event)">
-        <h2>Add Journal</h2>
+  <section class="content-section journal-layout">
+    <form class="box">
+      <h2>Add Journal</h2>
 
-        <label>Select Movie</label>
-        <select id="journalMovie" required>
-          <option value="Interstellar">Interstellar</option>
-          <option value="Oppenheimer">Oppenheimer</option>
-          <option value="The Batman">The Batman</option>
-          <option value="Dune">Dune</option>
-        </select>
+      <label>Your Rating (/10)</label>
+      <input type="number" min="1" max="10" placeholder="e.g. 9">
 
-        <label>Rating</label>
-        <select id="journalRating">
-          <option>★★★★★</option>
-          <option>★★★★☆</option>
-          <option>★★★☆☆</option>
-          <option>★★☆☆☆</option>
-          <option>★☆☆☆☆</option>
-        </select>
+      <label>Review</label>
+      <textarea rows="6" placeholder="Write your review here..."></textarea>
 
-        <label>Review</label>
-        <textarea id="journalReview" rows="6" required></textarea>
+      <button class="btn" type="button">Save Journal</button>
+    </form>
 
-        <button class="btn" type="submit">Save Journal</button>
-      </form>
-
-      <div class="box">
-        <h2>Added Journal</h2>
-        <div id="journalList"></div>
-      </div>
-    </section>
-  </main>
+    <div class="box">
+      <h2>Added Journal</h2>
+    </div>
+  </section>
+</main>
 
   <footer>
     <p>&copy; 2026 CineByte. Web Design Project.</p>
