@@ -22,4 +22,5 @@
     <?php else: ?>
       <a href="login.html" id="authNav">Login</a>
     <?php endif; ?>
+    </nav>
 </header>

@@ -15,8 +15,7 @@ if ($tmdb_id > 0) {
 }
 
 $selectedTitle = $movie['title'] ?? ($_GET['title'] ?? $_POST['title'] ?? '');
-$selectedPoster = $movie['poster_path'] ?? '';
-$selectedPoster = $_GET['poster'] ?? '';
+$selectedPoster = $movie['poster_path'] ?? ($_GET['poster'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');

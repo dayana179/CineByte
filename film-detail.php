@@ -75,9 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_w
         <button class="btn" type="submit">+ Add to Watchlist</button>
       </form>
 
-      <a href="journal.php?tmdb_id=<?= $id ?>&title=<?= urlencode($movie['title']) ?>"
-         class="btn btn-secondary">Write Journal</a>
-    </div>
+      <a
+        href="journal.php?tmdb_id=<?= $id ?>&title=<?= urlencode($movie['title']) ?>&poster=<?= urlencode($movie['poster_path'] ?? '') ?>"
+        class="btn btn-secondary"
+      >
+        Write Journal
+      </a>
   </section>
 </main>
 

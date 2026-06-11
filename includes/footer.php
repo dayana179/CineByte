@@ -21,7 +21,7 @@
   </div>
 </div>
 
-script.js
+<script src="script.js?v=40"></script>
 
 </body>
 </html>
