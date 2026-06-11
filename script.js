@@ -490,6 +490,13 @@ async function loadMovieDetails() {
 
       document.getElementById("detailDesc").textContent =
         movie.overview || "No description available.";
+
+        const journalBtn = document.getElementById("journalBtn");
+
+        if (journalBtn) {
+          journalBtn.href =
+            `journal.php?tmdb_id=${movie.id}&title=${encodeURIComponent(movie.title)}&poster=${encodeURIComponent(movie.poster_path || "")}`;
+        }
     }
   } catch (err) {
     console.error("Error loading movie details:", err);

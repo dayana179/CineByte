@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'includes/init.php';
 
 if (!isset($_SESSION["user_id"])) {
     header("Location: login.html");
@@ -8,6 +8,8 @@ if (!isset($_SESSION["user_id"])) {
 
 $username = $_SESSION["username"];
 $email = $_SESSION["email"];
+
+$db = getDB();
 ?>
 
 <!DOCTYPE html>
@@ -95,7 +97,27 @@ $email = $_SESSION["email"];
 
       <section id="journal" class="box">
         <h2>Added Journal</h2>
-        <p>Your journal entries will appear here.</p>
+
+        <?php
+        $stmt = $db->prepare(
+            "SELECT * FROM journals WHERE user_id = ? ORDER BY created_at DESC"
+        );
+
+        $stmt->execute([$_SESSION['user_id']]);
+        $journals = $stmt->fetchAll();
+
+        if (empty($journals)):
+        ?>
+          <p>Your journal entries will appear here.</p>
+        <?php else: ?>
+          <?php foreach ($journals as $j): ?>
+            <div class="review-box">
+              <h3><?= e($j['title']) ?></h3>
+              <p>⭐ <?= e($j['rating']) ?>/10</p>
+              <p><?= e($j['review']) ?></p>
+            </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </section>
 
       <section id="settings" class="box">

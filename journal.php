@@ -7,158 +7,132 @@ $pageTitle = 'Journal';
 $db = getDB();
 $msg = '';
 
-$tmdb_id = (int)($_GET['tmdb_id'] ?? 0);
+$tmdb_id = (int)($_GET['tmdb_id'] ?? $_POST['tmdb_id'] ?? 0);
 $movie = [];
 
-if ($tmdb_id) {
+if ($tmdb_id > 0) {
     $movie = tmdbFetch("/movie/$tmdb_id");
 }
 
+$selectedTitle = $movie['title'] ?? ($_GET['title'] ?? $_POST['title'] ?? '');
+$selectedPoster = $movie['poster_path'] ?? '';
+$selectedPoster = $_GET['poster'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $title = trim($_POST['title'] ?? '');
+    $rating = (int)($_POST['rating'] ?? 0);
+    $review = trim($_POST['review'] ?? '');
+    $tmdb_id = (int)($_POST['tmdb_id'] ?? 0);
 
-    $title = $_POST['title'];
-    $rating = (int)$_POST['rating'];
-    $review = $_POST['review'];
-    $tmdb_id = (int)$_POST['tmdb_id'];
+    if ($title === '' || $tmdb_id <= 0 || $rating < 1 || $rating > 10 || $review === '') {
+        $msg = "Please choose a movie and complete all journal fields.";
+    } else {
+        $stmt = $db->prepare(
+            "INSERT INTO journals 
+            (user_id, tmdb_id, title, rating, review)
+            VALUES (?, ?, ?, ?, ?)"
+        );
 
+        $stmt->execute([
+            $_SESSION['user_id'],
+            $tmdb_id,
+            $title,
+            $rating,
+            $review
+        ]);
 
-    $stmt = $db->prepare(
-        "INSERT INTO journals 
-        (user_id, tmdb_id, title, rating, review)
-        VALUES (?, ?, ?, ?, ?)"
-    );
-
-
-    $stmt->execute([
-        $_SESSION['user_id'],
-        $tmdb_id,
-        $title,
-        $rating,
-        $review
-    ]);
-
-
-    $msg = "Journal added!";
+        $msg = "Journal added!";
+    }
 }
-
 ?>
 
 <?php include 'includes/header.php'; ?>
 
-
 <main>
+  <section class="page-header">
+    <h1>Journal</h1>
+    <p>Record what you watched and write your personal viewing notes.</p>
+  </section>
 
-<section class="page-header">
-<h1>Journal</h1>
-<p>Record what you watched and write your personal viewing notes.</p>
-</section>
+<section class="content-section journal-layout journal-full-width">
 
+  <form method="POST" class="box journal-form-box">
 
-<section class="content-section journal-layout">
+    <?php if (!empty($msg)): ?>
+      <p class="auth-message"><?= e($msg) ?></p>
+    <?php endif; ?>
 
+    <div class="journal-content">
 
-<form method="POST" class="box">
+      <div class="journal-poster-area">
 
-<h2>Add Journal</h2>
+        <?php if (!empty($selectedPoster)): ?>
+          <img
+            class="journal-poster"
+            src="<?= e(TMDB_IMAGE_BASE . $selectedPoster) ?>"
+            alt="<?= e($selectedTitle) ?>"
+          >
+        <?php else: ?>
+          <div class="journal-poster-placeholder">
+            No Poster
+          </div>
+        <?php endif; ?>
 
+      </div>
 
-<?php if (!empty($movie)): ?>
+      <div class="journal-form-area">
 
+        <h2>Add Journal</h2>
 
-<img class="journal-poster"
-src="<?= TMDB_IMAGE_BASE . $movie['poster_path'] ?>">
+        <label>Movie</label>
 
+        <input
+          type="text"
+          value="<?= e($selectedTitle) ?>"
+          readonly
+        >
 
-<h3><?= e($movie['title']) ?></h3>
+        <input
+          type="hidden"
+          name="title"
+          value="<?= e($selectedTitle) ?>"
+        >
 
-<p>
-⭐ <?= number_format($movie['vote_average'],1) ?>/10
-</p>
+        <input
+          type="hidden"
+          name="tmdb_id"
+          value="<?= $tmdb_id ?>"
+        >
 
+        <label>Your Rating (/10)</label>
 
-<input type="hidden"
-name="title"
-value="<?= e($movie['title']) ?>">
+        <input
+          type="number"
+          name="rating"
+          min="1"
+          max="10"
+          required
+        >
 
+        <label>Review</label>
 
-<input type="hidden"
-name="tmdb_id"
-value="<?= $tmdb_id ?>">
+        <textarea
+          name="review"
+          rows="6"
+          required
+        ></textarea>
 
+        <button class="btn" type="submit">
+          Save Journal
+        </button>
 
-<?php endif; ?>
+      </div>
 
+    </div>
 
-<label>Your Rating (/10)</label>
-
-<input 
-type="number"
-name="rating"
-min="1"
-max="10"
-required>
-
-
-<label>Review</label>
-
-<textarea 
-name="review"
-rows="6"
-required></textarea>
-
-
-<button class="btn">
-Save Journal
-</button>
-
-
-</form>
-
-
-
-<div class="box">
-
-<h2>Added Journal</h2>
-
-
-<?php
-
-$stmt = $db->prepare(
-"SELECT * FROM journals WHERE user_id=? ORDER BY created_at DESC"
-);
-
-$stmt->execute([$_SESSION['user_id']]);
-
-$journals = $stmt->fetchAll();
-
-
-foreach ($journals as $j):
-
-?>
-
-
-<div class="review-box">
-
-<h3><?= e($j['title']) ?></h3>
-
-<p>⭐ <?= $j['rating'] ?>/10</p>
-
-<p><?= e($j['review']) ?></p>
-
-</div>
-
-
-<?php endforeach; ?>
-
-
-</div>
-
+  </form>
 
 </section>
-
-
 </main>
-
 
 <?php include 'includes/footer.php'; ?>
