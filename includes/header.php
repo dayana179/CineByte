@@ -18,9 +18,8 @@
     <a href="journal.php">Journal</a>
     <a href="profile.php">Profile</a>
     <?php if ($user): ?>
-      <a href="auth.php?action=logout" style="color:#ff3c3c;">Logout</a>
+      <a href="#" id="authNav" class="journal-open-btn" onclick="openJournalModal(); return false;">+ Journal</a>
     <?php else: ?>
-      <a href="auth.php">Login</a>
+      <a href="login.html" id="authNav">Login</a>
     <?php endif; ?>
-  </nav>
 </header>

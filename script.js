@@ -29,21 +29,33 @@ async function updateAuthNav() {
   if (!authNav) return;
 
   try {
-    const res = await fetch("auth_status.php");
+    const res = await fetch("auth_status.php", {
+      cache: "no-store"
+    });
+
     const data = await res.json();
 
     if (data.loggedIn) {
-      authNav.textContent = "Logout";
-      authNav.href = "logout.php";
-      authNav.onclick = null;
+      authNav.textContent = "+ Journal";
+      authNav.href = "#";
+      authNav.classList.add("journal-open-btn");
+
+      authNav.onclick = function (event) {
+        event.preventDefault();
+        openJournalModal();
+      };
     } else {
       authNav.textContent = "Login";
       authNav.href = "login.html";
+      authNav.classList.remove("journal-open-btn");
       authNav.onclick = null;
     }
   } catch (err) {
+    console.error("Auth status error:", err);
     authNav.textContent = "Login";
     authNav.href = "login.html";
+    authNav.classList.remove("journal-open-btn");
+    authNav.onclick = null;
   }
 }
 
@@ -236,6 +248,111 @@ async function searchHeaderMovies(query) {
   } catch (err) {
     console.error("Header search error:", err);
     resultsBox.innerHTML = `<p class="header-search-empty">Search failed. Try again.</p>`;
+  }
+}
+
+function openJournalModal() {
+  const modal = document.getElementById("journalSearchModal");
+  const input = document.getElementById("journalSearchInput");
+
+  if (!modal) return;
+
+  modal.classList.add("show");
+
+  setTimeout(() => {
+    if (input) input.focus();
+  }, 100);
+}
+
+function closeJournalModal() {
+  const modal = document.getElementById("journalSearchModal");
+  const input = document.getElementById("journalSearchInput");
+  const results = document.getElementById("journalSearchResults");
+
+  if (!modal) return;
+
+  modal.classList.remove("show");
+
+  if (input) input.value = "";
+  if (results) results.innerHTML = "";
+}
+
+let journalSearchTimer = null;
+
+function setupJournalSearchModal() {
+  const modal = document.getElementById("journalSearchModal");
+  const closeBtn = document.getElementById("journalModalClose");
+  const input = document.getElementById("journalSearchInput");
+  const results = document.getElementById("journalSearchResults");
+
+  if (!modal || !closeBtn || !input || !results) return;
+
+  closeBtn.addEventListener("click", closeJournalModal);
+
+  modal.addEventListener("click", function (event) {
+    if (event.target === modal) {
+      closeJournalModal();
+    }
+  });
+
+  input.addEventListener("input", function () {
+    const query = input.value.trim();
+
+    clearTimeout(journalSearchTimer);
+
+    if (query.length < 2) {
+      results.innerHTML = `<p class="journal-modal-empty">Type at least 2 letters.</p>`;
+      return;
+    }
+
+    results.innerHTML = `<p class="journal-modal-empty">Searching...</p>`;
+
+    journalSearchTimer = setTimeout(() => {
+      searchJournalMovies(query);
+    }, 350);
+  });
+}
+
+async function searchJournalMovies(query) {
+  const results = document.getElementById("journalSearchResults");
+  if (!results) return;
+
+  try {
+    const res = await fetch(
+      `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=false&page=1`
+    );
+
+    const data = await res.json();
+    const movies = data.results ? data.results.slice(0, 6) : [];
+
+    if (!movies.length) {
+      results.innerHTML = `<p class="journal-modal-empty">No films found.</p>`;
+      return;
+    }
+
+    results.innerHTML = "";
+
+    movies.forEach((movie) => {
+      const item = document.createElement("a");
+      item.classList.add("journal-modal-result");
+      item.href =
+        `journal.php?tmdb_id=${movie.id}` +
+        `&title=${encodeURIComponent(movie.title)}` +
+        `&poster=${encodeURIComponent(movie.poster_path || "")}`;
+
+      item.innerHTML = `
+        <img src="${getPosterPath(movie)}" alt="${movie.title}">
+        <div>
+          <h4>${movie.title}</h4>
+          <p>${getMovieYear(movie)}</p>
+        </div>
+      `;
+
+      results.appendChild(item);
+    });
+  } catch (err) {
+    console.error("Journal search error:", err);
+    results.innerHTML = `<p class="journal-modal-empty">Search failed. Try again.</p>`;
   }
 }
 
@@ -974,3 +1091,4 @@ setupHeaderSearch();
 setupFilmBrowser();
 loadMovieDetails();
 setupListsPage();
+setupJournalSearchModal();

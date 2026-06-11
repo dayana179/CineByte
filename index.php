@@ -16,7 +16,7 @@ $movies = array_slice($data['results'] ?? [], 0, 3);
          write journals, and organize viewing activities in one place.</p>
       <div class="hero-actions">
         <a href="films.php" class="btn">Explore Films</a>
-        <a href="journal.php" class="btn btn-secondary">Add Journal</a>
+        <a href="#" class="btn btn-secondary" onclick="openJournalModal(); return false;">Add Journal</a>
       </div>
     </div>
   </section>

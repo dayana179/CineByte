@@ -30,7 +30,6 @@ $db = getDB();
     <a href="index.html">Home</a>
     <a href="films.html">Films</a>
     <a href="lists.html">Lists</a>
-    <a href="journal.html">Journal</a>
     <a href="profile.php">Profile</a>
     <div class="header-search">
       <button type="button" id="headerSearchToggle" class="header-search-btn" aria-label="Open search">
@@ -131,6 +130,26 @@ $db = getDB();
 <footer>
   <p>&copy; 2026 CineByte. Web Design Project.</p>
 </footer>
+
+  <div id="journalSearchModal" class="journal-modal">
+    <div class="journal-modal-box">
+      <div class="journal-modal-header">
+        <h2>Add to your journal...</h2>
+        <button id="journalModalClose" class="journal-modal-close" type="button">×</button>
+      </div>
+
+      <div class="journal-modal-body">
+        <input
+          type="text"
+          id="journalSearchInput"
+          placeholder="Search for film..."
+          autocomplete="off"
+        />
+
+        <div id="journalSearchResults" class="journal-modal-results"></div>
+      </div>
+    </div>
+  </div>
 
 <script src="script.js"></script>
 </body>

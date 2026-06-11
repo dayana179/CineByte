@@ -144,6 +144,7 @@ nav a:hover {
   gap: 24px;
 }
 
+
 .movie-card,
 .list-card,
 .box,
@@ -839,4 +840,115 @@ nav a,
 
 .forgot-password-link:hover {
   color: #ffc84a;
+}
+
+.journal-open-btn {
+  background: #00c030;
+  color: #fff !important;
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-weight: 800;
+}
+
+.journal-open-btn:hover {
+  background: #00a82a;
+}
+
+.journal-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 10, 14, 0.82);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 90px;
+  z-index: 9999;
+}
+
+.journal-modal.show {
+  display: flex;
+}
+
+.journal-modal-box {
+  width: min(900px, 90%);
+  background: #415568;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+}
+
+.journal-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 28px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+.journal-modal-header h2 {
+  margin: 0;
+  color: #fff;
+}
+
+.journal-modal-close {
+  background: transparent;
+  border: none;
+  color: #b7c5d3;
+  font-size: 42px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.journal-modal-body {
+  padding: 42px 28px 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#journalSearchInput {
+  width: min(560px, 100%);
+  padding: 18px 20px;
+  font-size: 18px;
+  border-radius: 5px;
+  border: none;
+  background: #fff;
+  color: #111;
+}
+
+.journal-modal-results {
+  width: min(560px, 100%);
+  margin-top: 20px;
+}
+
+.journal-modal-result {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.journal-modal-result:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.journal-modal-result img {
+  width: 48px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.journal-modal-result h4 {
+  margin: 0 0 4px;
+}
+
+.journal-modal-result p,
+.journal-modal-empty {
+  margin: 0;
+  color: #d3dde6;
 }
