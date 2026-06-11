@@ -3,13 +3,25 @@
 // =====================
 function toggleMenu() {
   const nav = document.getElementById("mainNav");
-  if (nav) nav.classList.toggle("show");
+  const menuBtn = document.querySelector(".menu-toggle");
+
+  if (!nav) return;
+
+  nav.classList.toggle("show");
+
+  if (menuBtn) {
+    menuBtn.textContent = nav.classList.contains("show") ? "✕" : "☰";
+  }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+  const nav = document.getElementById("mainNav");
+  const menuBtn = document.querySelector(".menu-toggle");
+
   document.querySelectorAll("#mainNav a").forEach((link) => {
     link.addEventListener("click", () => {
-      document.getElementById("mainNav")?.classList.remove("show");
+      if (nav) nav.classList.remove("show");
+      if (menuBtn) menuBtn.textContent = "☰";
     });
   });
 });
@@ -1615,6 +1627,21 @@ function setupProfileWatchlistRemove() {
     });
   });
 }
+
+document.addEventListener("click", function (event) {
+  const nav = document.getElementById("mainNav");
+  const menuBtn = document.querySelector(".menu-toggle");
+
+  if (!nav || !menuBtn) return;
+
+  const clickedInsideNav = nav.contains(event.target);
+  const clickedMenuButton = menuBtn.contains(event.target);
+
+  if (!clickedInsideNav && !clickedMenuButton && nav.classList.contains("show")) {
+    nav.classList.remove("show");
+    menuBtn.textContent = "☰";
+  }
+});
 
 // =====================
 // INIT

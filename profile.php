@@ -110,6 +110,12 @@ $watchlist = $watchStmt->fetchAll();
         <p class="user-status">Status: Logged in</p>
       </section>
 
+      <section id="settings" class="box">
+          <h2>Account Settings</h2>
+          <p class="muted-text">Change your username and password.</p>
+          <a href="settings.php" class="btn">Go to Settings</a>
+      </section>
+
       <section id="watchlist" class="box">
         <div class="profile-section-header">
           <div>
@@ -237,7 +243,6 @@ $watchlist = $watchStmt->fetchAll();
       </section>
 
       <section id="settings" class="box">
-        <h2>Settings</h2>
         <a class="btn" href="logout.php">Logout</a>
       </section>
     </div>
