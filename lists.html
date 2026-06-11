@@ -50,76 +50,75 @@
   <main>
     <section class="page-header lists-page-header">
       <p class="tagline">CineByte Lists</p>
-      <h1>Browse and Create Lists</h1>
+      <h1>Lists</h1>
       <p>
-        Explore movies by category and create your own personal movie lists.
+        Browse featured movie collections and view lists created by CineByte users.
       </p>
+
+      <div class="hero-actions">
+        <a href="create-list.php" class="btn">Create New List</a>
+      </div>
     </section>
 
-    <section class="content-section lists-layout">
-      <aside class="lists-sidebar">
-        <div class="box">
-          <h2>Categories</h2>
+<section class="content-section">
+  <div class="lists-showcase-header">
+    <h2>Explore Lists</h2>
+  </div>
 
-          <div class="category-list" id="categoryList">
-            <button class="category-btn active" data-type="popular">Popular</button>
-            <button class="category-btn" data-type="top_rated">Top Rated</button>
-            <button class="category-btn" data-type="upcoming">Upcoming</button>
-            <button class="category-btn" data-type="now_playing">Now Playing</button>
-            <button class="category-btn" data-genre="28">Action</button>
-            <button class="category-btn" data-genre="35">Comedy</button>
-            <button class="category-btn" data-genre="27">Horror</button>
-            <button class="category-btn" data-genre="10749">Romance</button>
-            <button class="category-btn" data-genre="878">Science Fiction</button>
-            <button class="category-btn" data-genre="16">Animation</button>
-          </div>
+    <div class="lists-category-showcase">
+      <article class="list-category-card active" data-category="popular">
+        <h2>Top 20 Popular Movies</h2>
+        <p>The current popular films from TMDB.</p>
+      </article>
+
+      <article class="list-category-card" data-category="top_rated">
+        <h2>Featured Films</h2>
+        <p>Highly rated films worth exploring.</p>
+      </article>
+
+      <article class="list-category-card" data-category="now_playing">
+        <h2>Now Playing</h2>
+        <p>Films currently active in cinemas.</p>
+      </article>
+
+      <article class="list-category-card" data-category="upcoming">
+        <h2>Upcoming Releases</h2>
+        <p>Films coming soon.</p>
+      </article>
+
+      <a href="#createdListsSection" class="list-category-card my-list-card">
+          <h2>My List</h2>
+          <p>Jump to your created movie lists.</p>
+      </a>
+    </div>
+  </section>
+
+    <section class="content-section">
+      <div class="lists-section-header">
+        <div>
+          <h2 id="categoryTitle">Top 20 Popular Movies</h2>
+          <p id="categoryStatus" class="muted-text">Loading movies...</p>
+        </div>
+      </div>
+
+      <div id="categoryMovieGrid" class="poster-grid">
+        <!-- Category movies appear here -->
+      </div>
+    </section>
+
+    <section class="content-section user-lists-area" id="createdListsSection">
+      <div class="lists-section-header">
+        <div>
+          <h2>Created Lists</h2>
+          <p class="muted-text">Lists created by CineByte users.</p>
         </div>
 
-        <div class="box create-list-box">
-          <h2>Create List</h2>
+        <a href="create-list.php" class="btn btn-secondary">Create List</a>
+      </div>
 
-          <form id="createListForm">
-            <input
-              type="text"
-              id="listTitleInput"
-              placeholder="List title"
-              required
-            />
-
-            <button type="submit" class="btn">Create List</button>
-          </form>
-        </div>
-      </aside>
-
-      <section class="lists-main">
-        <div class="lists-section-header">
-          <div>
-            <h2 id="categoryTitle">Popular Movies</h2>
-            <p id="categoryStatus" class="muted-text">Loading movies...</p>
-          </div>
-
-          <button id="loadMoreCategoryBtn" class="btn btn-secondary" type="button">
-            Load More
-          </button>
-        </div>
-
-        <div id="categoryMovieGrid" class="poster-grid">
-          <!-- Category movies appear here -->
-        </div>
-
-        <div class="user-lists-area">
-          <div class="lists-section-header">
-            <div>
-              <h2>My Lists</h2>
-              <p class="muted-text">Your created lists are saved in the CineByte database.</p>
-            </div>
-          </div>
-
-          <div id="userListsGrid" class="user-lists-grid">
-            <!-- Created lists appear here -->
-          </div>
-        </div>
-      </section>
+      <div id="userListsGrid" class="user-lists-grid">
+        <!-- Created lists appear here -->
+      </div>
     </section>
   </main>
 

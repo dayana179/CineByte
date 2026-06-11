@@ -10,6 +10,22 @@ $username = $_SESSION["username"];
 $email = $_SESSION["email"];
 
 $db = getDB();
+
+$listStmt = $db->prepare("
+    SELECT 
+        ul.id,
+        ul.list_name,
+        ul.created_at,
+        COUNT(lm.id) AS movie_count
+    FROM user_lists ul
+    LEFT JOIN list_movies lm ON ul.id = lm.list_id
+    WHERE ul.user_id = ?
+    GROUP BY ul.id, ul.list_name, ul.created_at
+    ORDER BY ul.created_at DESC
+");
+
+$listStmt->execute([$_SESSION["user_id"]]);
+$userLists = $listStmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -90,8 +106,60 @@ $db = getDB();
       </section>
 
       <section id="created" class="box">
-        <h2>Created List</h2>
-        <p>Your created lists will appear here.</p>
+        <div class="profile-section-header">
+          <div>
+            <h2>Created List</h2>
+            <p class="muted-text">Your movie lists created in CineByte.</p>
+          </div>
+
+          <a href="create-list.php" class="btn btn-secondary">Create List</a>
+        </div>
+
+        <?php if (empty($userLists)): ?>
+          <p>Your created lists will appear here.</p>
+        <?php else: ?>
+          <div class="profile-list-grid">
+            <?php foreach ($userLists as $list): ?>
+              <?php
+                $movieStmt = $db->prepare("
+                    SELECT tmdb_id, title, poster_path
+                    FROM list_movies
+                    WHERE list_id = ?
+                    ORDER BY added_at DESC
+                    LIMIT 4
+                ");
+
+                $movieStmt->execute([$list["id"]]);
+                $movies = $movieStmt->fetchAll();
+              ?>
+
+              <article class="profile-list-card">
+                <h3><?= e($list["list_name"]) ?></h3>
+                <p class="user-list-meta">
+                  <?= e($list["movie_count"]) ?> movie<?= $list["movie_count"] == 1 ? "" : "s" ?>
+                </p>
+
+                <?php if (empty($movies)): ?>
+                  <p class="muted-text">No movies added yet.</p>
+                <?php else: ?>
+                  <div class="profile-list-posters">
+                    <?php foreach ($movies as $movie): ?>
+                      <?php
+                        $poster = !empty($movie["poster_path"])
+                          ? "https://image.tmdb.org/t/p/w500" . $movie["poster_path"]
+                          : "https://via.placeholder.com/500x750?text=No+Poster";
+                      ?>
+
+                      <a href="film-detail.html?id=<?= e($movie["tmdb_id"]) ?>">
+                        <img src="<?= e($poster) ?>" alt="<?= e($movie["title"]) ?>">
+                      </a>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+              </article>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
       </section>
 
       <section id="journal" class="box">

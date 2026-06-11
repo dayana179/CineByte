@@ -630,13 +630,32 @@ let currentCategoryName = "Popular Movies";
 let listCategoryTotalPages = 1;
 let databaseUserLists = [];
 
-function getLoggedInUser() {
-  return JSON.parse(localStorage.getItem("cinebyteCurrentUser"));
+let currentSessionUser = null;
+
+async function fetchCurrentSessionUser() {
+  try {
+    const res = await fetch("auth_status.php", {
+      cache: "no-store",
+      credentials: "same-origin"
+    });
+
+    const data = await res.json();
+
+    if (data.loggedIn) {
+      currentSessionUser = data;
+    } else {
+      currentSessionUser = null;
+    }
+  } catch (err) {
+    console.error("Session user error:", err);
+    currentSessionUser = null;
+  }
 }
 
 function getLoggedInUserId() {
-  const user = getLoggedInUser();
-  return user && user.id ? user.id : null;
+  return currentSessionUser && currentSessionUser.user_id
+    ? currentSessionUser.user_id
+    : null;
 }
 
 function getCategoryUrl() {
@@ -648,24 +667,31 @@ function getCategoryUrl() {
 }
 
 async function fetchUserListsFromDatabase() {
-  const userId = getLoggedInUserId();
-
-  if (!userId) {
+  if (!getLoggedInUserId()) {
     databaseUserLists = [];
     renderUserLists();
     return;
   }
 
   try {
-    const res = await fetch(`api/lists.php?action=get&user_id=${userId}`);
+    const res = await fetch("api/lists.php?action=get", {
+      cache: "no-store",
+      credentials: "same-origin"
+    });
+
     const data = await res.json();
 
     if (data.success) {
       databaseUserLists = data.lists;
-      renderUserLists();
+    } else {
+      databaseUserLists = [];
     }
+
+    renderUserLists();
   } catch (err) {
     console.error("Error fetching user lists:", err);
+    databaseUserLists = [];
+    renderUserLists();
   }
 }
 
@@ -806,9 +832,9 @@ function createListMovieCard(movie) {
 }
 
 async function createDatabaseList(listName) {
-  const userId = getLoggedInUserId();
+  await fetchCurrentSessionUser();
 
-  if (!userId) {
+  if (!getLoggedInUserId()) {
     alert("Please login first before creating a list.");
     window.location.href = "login.html";
     return;
@@ -817,26 +843,38 @@ async function createDatabaseList(listName) {
   try {
     const res = await fetch("api/lists.php?action=create", {
       method: "POST",
+      credentials: "same-origin",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        user_id: userId,
         list_name: listName
       })
     });
 
-    const data = await res.json();
+    const text = await res.text();
+    console.log("Create list raw response:", text);
+
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      alert("PHP returned invalid JSON. Check Console for the raw response.");
+      console.error("Invalid JSON from api/lists.php:", text);
+      return;
+    }
 
     if (data.success) {
       await fetchUserListsFromDatabase();
-      await loadCategoryMovies(false);
+      await loadOverviewCategoryMovies();
     } else {
       alert(data.message || "Unable to create list.");
+      console.error("Create list failed:", data);
     }
   } catch (err) {
     console.error("Error creating list:", err);
-    alert("Unable to create list.");
+    alert("Unable to create list. Check Console for details.");
   }
 }
 
@@ -844,6 +882,7 @@ async function addMovieToDatabaseList(listId, movie) {
   try {
     const res = await fetch("api/lists.php?action=add_movie", {
       method: "POST",
+      credentials: "same-origin",
       headers: {
         "Content-Type": "application/json"
       },
@@ -879,6 +918,7 @@ async function deleteDatabaseList(listId) {
   try {
     const res = await fetch("api/lists.php?action=delete", {
       method: "POST",
+      credentials: "same-origin",
       headers: {
         "Content-Type": "application/json"
       },
@@ -891,7 +931,7 @@ async function deleteDatabaseList(listId) {
 
     if (data.success) {
       await fetchUserListsFromDatabase();
-      await loadCategoryMovies(false);
+      await loadOverviewCategoryMovies();
     } else {
       alert(data.message || "Unable to delete list.");
     }
@@ -905,6 +945,7 @@ async function removeMovieFromDatabaseList(listId, tmdbId) {
   try {
     const res = await fetch("api/lists.php?action=remove_movie", {
       method: "POST",
+      credentials: "same-origin",
       headers: {
         "Content-Type": "application/json"
       },
@@ -1075,11 +1116,243 @@ async function setupListsPage() {
 
   if (!listsPage) return;
 
+  await fetchCurrentSessionUser();
+
   setupCategoryButtons();
   setupCreateListForm();
 
   await fetchUserListsFromDatabase();
   await loadCategoryMovies(false);
+}
+
+// =====================
+// LISTS OVERVIEW PAGE
+// =====================
+let overviewCategoryType = "popular";
+let overviewCategoryName = "Top 20 Popular Movies";
+
+function getOverviewCategoryUrl() {
+  return `${BASE_URL}/movie/${overviewCategoryType}?api_key=${API_KEY}&page=1`;
+}
+
+async function loadOverviewCategoryMovies() {
+  const grid = document.getElementById("categoryMovieGrid");
+  const title = document.getElementById("categoryTitle");
+  const status = document.getElementById("categoryStatus");
+
+  if (!grid) return;
+
+  try {
+    if (title) title.textContent = overviewCategoryName;
+    if (status) status.textContent = "Loading movies...";
+
+    const res = await fetch(getOverviewCategoryUrl());
+    const data = await res.json();
+
+    grid.innerHTML = "";
+
+    const movies = data.results ? data.results.slice(0, 20) : [];
+
+    movies.forEach((movie) => {
+      grid.appendChild(createPosterCard(movie));
+    });
+
+    if (status) {
+      status.textContent = `Showing ${movies.length} films.`;
+    }
+  } catch (err) {
+    console.error("Overview category error:", err);
+
+    if (status) {
+      status.textContent = "Unable to load movies.";
+    }
+  }
+}
+
+function setupListsOverviewPage() {
+  const categoryCards = document.querySelectorAll(".list-category-card");
+
+  if (!document.getElementById("categoryMovieGrid")) return;
+
+  categoryCards.forEach((card) => {
+    card.addEventListener("click", function () {
+      categoryCards.forEach((item) => item.classList.remove("active"));
+      card.classList.add("active");
+
+      overviewCategoryType = card.dataset.category || "popular";
+      overviewCategoryName = card.querySelector("h2").textContent.trim();
+
+      loadOverviewCategoryMovies();
+    });
+  });
+
+  loadOverviewCategoryMovies();
+  fetchCurrentSessionUser().then(fetchUserListsFromDatabase);
+}
+
+// =====================
+// CREATE LIST PAGE
+// =====================
+let selectedListMovies = [];
+
+function renderSelectedMovies() {
+  const grid = document.getElementById("selectedMoviesGrid");
+
+  if (!grid) return;
+
+  if (!selectedListMovies.length) {
+    grid.innerHTML = `<p class="empty-list-message">No movies added yet.</p>`;
+    return;
+  }
+
+  grid.innerHTML = "";
+
+  selectedListMovies.forEach((movie) => {
+    const item = document.createElement("div");
+    item.classList.add("selected-movie-card");
+
+    item.innerHTML = `
+      <img src="${getPosterPath(movie)}" alt="${movie.title}">
+      <div>
+        <h4>${movie.title}</h4>
+        <p>${getMovieYear(movie)}</p>
+        <button type="button" class="remove-selected-movie-btn">Remove</button>
+      </div>
+    `;
+
+    item.querySelector(".remove-selected-movie-btn").addEventListener("click", function () {
+      selectedListMovies = selectedListMovies.filter((m) => m.id !== movie.id);
+      renderSelectedMovies();
+    });
+
+    grid.appendChild(item);
+  });
+}
+
+function setupCreateListPage() {
+  const form = document.getElementById("newListForm");
+  const titleInput = document.getElementById("newListTitle");
+  const searchForm = document.getElementById("newListMovieSearchForm");
+  const searchInput = document.getElementById("newListMovieSearchInput");
+  const results = document.getElementById("newListSearchResults");
+  const status = document.getElementById("newListSearchStatus");
+
+  if (!form || !titleInput || !searchForm || !searchInput || !results) return;
+
+  searchForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const query = searchInput.value.trim();
+
+    if (!query) return;
+
+    try {
+      if (status) status.textContent = "Searching...";
+
+      const res = await fetch(
+        `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=false&page=1`
+      );
+
+      const data = await res.json();
+      const movies = data.results ? data.results.slice(0, 8) : [];
+
+      results.innerHTML = "";
+
+      if (!movies.length) {
+        results.innerHTML = `<p class="muted-text">No movies found.</p>`;
+        if (status) status.textContent = "";
+        return;
+      }
+
+      movies.forEach((movie) => {
+        const item = document.createElement("div");
+        item.classList.add("list-search-result-card");
+
+        item.innerHTML = `
+          <img src="${getPosterPath(movie)}" alt="${movie.title}">
+          <div>
+            <h3>${movie.title}</h3>
+            <p>${getMovieYear(movie)}</p>
+            <button type="button" class="btn small-btn">Add to List</button>
+          </div>
+        `;
+
+        item.querySelector("button").addEventListener("click", function () {
+          const alreadyAdded = selectedListMovies.some((m) => m.id === movie.id);
+
+          if (alreadyAdded) {
+            alert("This movie is already in your list.");
+            return;
+          }
+
+          selectedListMovies.push(movie);
+          renderSelectedMovies();
+        });
+
+        results.appendChild(item);
+      });
+
+      if (status) status.textContent = `Showing results for "${query}".`;
+    } catch (err) {
+      console.error("Create list search error:", err);
+      if (status) status.textContent = "Unable to search movies.";
+    }
+  });
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const listName = titleInput.value.trim();
+
+    if (!listName) {
+      alert("Please enter a list name.");
+      return;
+    }
+
+    if (!selectedListMovies.length) {
+      alert("Please add at least one movie.");
+      return;
+    }
+
+    try {
+      const res = await fetch("api/lists.php?action=create_with_movies", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          list_name: listName,
+          movies: selectedListMovies
+        })
+      });
+
+      const text = await res.text();
+      console.log("Create with movies response:", text);
+
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        alert("PHP returned invalid JSON. Check Console.");
+        console.error(text);
+        return;
+      }
+
+      if (data.success) {
+        alert("List created successfully.");
+        window.location.href = "lists.html";
+      } else {
+        alert(data.message || "Unable to create list.");
+      }
+    } catch (err) {
+      console.error("Save list error:", err);
+      alert("Unable to save list.");
+    }
+  });
+
+  renderSelectedMovies();
 }
 
 // =====================
@@ -1090,5 +1363,6 @@ loadMovies();
 setupHeaderSearch();
 setupFilmBrowser();
 loadMovieDetails();
-setupListsPage();
 setupJournalSearchModal();
+setupListsOverviewPage();
+setupCreateListPage();
