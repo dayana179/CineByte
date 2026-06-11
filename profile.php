@@ -72,7 +72,7 @@ $userLists = $listStmt->fetchAll();
       </div>
     </div>
 
-    <a href="logout.php" id="authNav">Logout</a>
+    <a href="login.html" id="authNav">Login</a>
   </nav>
 </header>
 
@@ -156,7 +156,11 @@ $userLists = $listStmt->fetchAll();
                     <?php endforeach; ?>
                   </div>
                 <?php endif; ?>
-              </article>
+
+                  <a class="small-link" href="lists.html#createdListsSection">
+                    View list
+                  </a>
+                </article>
             <?php endforeach; ?>
           </div>
         <?php endif; ?>
