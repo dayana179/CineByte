@@ -301,6 +301,43 @@ select {
   border: 1px solid #2b323d;
 }
 
+.profile-watchlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+  gap: 18px;
+}
+
+.profile-watchlist-card img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #2b323d;
+}
+
+.profile-watchlist-card h3 {
+  font-size: 14px;
+  line-height: 1.25;
+  margin-top: 8px;
+}
+
+.remove-watchlist-btn {
+  width: 100%;
+  margin-top: 9px;
+  padding: 8px 10px;
+  background: transparent;
+  color: #ff3c3c;
+  border: 1px solid #ff3c3c;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.remove-watchlist-btn:hover {
+  background: #ff3c3c;
+  color: #101318;
+}
+
 @media (max-width: 700px) {
   .profile-section-header {
     flex-direction: column;
@@ -1297,6 +1334,73 @@ html {
 
 @media (max-width: 900px) {
   .create-list-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.list-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.list-detail-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.add-movies-to-list {
+  margin-top: 32px;
+}
+
+.list-detail-movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+  gap: 18px;
+}
+
+.list-detail-movie-card img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #2b323d;
+}
+
+.list-detail-movie-card h3 {
+  font-size: 14px;
+  line-height: 1.25;
+  margin-top: 8px;
+}
+
+.list-detail-movie-card p {
+  color: #bbb;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.remove-detail-movie-btn {
+  width: 100%;
+  margin-top: 9px;
+  padding: 8px 10px;
+  background: transparent;
+  color: #ff3c3c;
+  border: 1px solid #ff3c3c;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.remove-detail-movie-btn:hover {
+  background: #ff3c3c;
+  color: #101318;
+}
+
+@media (max-width: 900px) {
+  .list-detail-layout {
     grid-template-columns: 1fr;
   }
 }

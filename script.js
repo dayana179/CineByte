@@ -584,6 +584,48 @@ function setupFilmBrowser() {
 }
 
 // =====================
+// WATCHLIST
+// =====================
+let currentDetailMovie = null;
+
+async function addToWatchlist() {
+  await fetchCurrentSessionUser();
+
+  if (!getLoggedInUserId()) {
+    alert("Please login first before adding to watchlist.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  if (!currentDetailMovie) {
+    alert("Movie details are still loading. Please try again.");
+    return;
+  }
+
+  try {
+    const res = await fetch("api/watchlist.php?action=add", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        tmdb_id: currentDetailMovie.id,
+        title: currentDetailMovie.title,
+        poster_path: currentDetailMovie.poster_path
+      })
+    });
+
+    const data = await res.json();
+
+    alert(data.message || "Watchlist updated.");
+  } catch (err) {
+    console.error("Add to watchlist error:", err);
+    alert("Unable to add movie to watchlist.");
+  }
+}
+
+// =====================
 // MOVIE DETAIL PAGE API
 // =====================
 async function loadMovieDetails() {
@@ -595,6 +637,7 @@ async function loadMovieDetails() {
   try {
     const res = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}`);
     const movie = await res.json();
+    currentDetailMovie = movie;
 
     if (document.getElementById("detailTitle")) {
       document.getElementById("detailTitle").textContent = movie.title;
@@ -1042,7 +1085,10 @@ function renderUserLists() {
 
       ${moviesHTML}
 
-      <button type="button" class="delete-list-btn">Delete List</button>
+      <div class="list-card-actions">
+        <a href="list-detail.php?id=${list.id}" class="small-link">View / Edit List</a>
+        <button type="button" class="delete-list-btn">Delete List</button>
+      </div>
     `;
 
     const deleteBtn = card.querySelector(".delete-list-btn");
@@ -1356,6 +1402,221 @@ function setupCreateListPage() {
 }
 
 // =====================
+// LIST DETAIL / EDIT PAGE
+// =====================
+function setupListDetailPage() {
+  const listIdInput = document.getElementById("editListId");
+  const nameForm = document.getElementById("editListNameForm");
+  const nameInput = document.getElementById("editListNameInput");
+  const searchForm = document.getElementById("editListMovieSearchForm");
+  const searchInput = document.getElementById("editListMovieSearchInput");
+  const results = document.getElementById("editListSearchResults");
+  const status = document.getElementById("editListSearchStatus");
+
+  if (!listIdInput) return;
+
+  const listId = listIdInput.value;
+
+  if (nameForm && nameInput) {
+    nameForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const listName = nameInput.value.trim();
+
+      if (!listName) {
+        alert("Please enter a list name.");
+        return;
+      }
+
+      try {
+        const res = await fetch("api/lists.php?action=rename", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            list_id: listId,
+            list_name: listName
+          })
+        });
+
+        const data = await res.json();
+
+        alert(data.message || "List updated.");
+
+        if (data.success) {
+          location.reload();
+        }
+      } catch (err) {
+        console.error("Rename list error:", err);
+        alert("Unable to rename list.");
+      }
+    });
+  }
+
+  if (searchForm && searchInput && results) {
+    searchForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const query = searchInput.value.trim();
+
+      if (!query) return;
+
+      try {
+        if (status) status.textContent = "Searching...";
+
+        const res = await fetch(
+          `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&include_adult=false&page=1`
+        );
+
+        const data = await res.json();
+        const movies = data.results ? data.results.slice(0, 8) : [];
+
+        results.innerHTML = "";
+
+        if (!movies.length) {
+          results.innerHTML = `<p class="muted-text">No movies found.</p>`;
+          if (status) status.textContent = "";
+          return;
+        }
+
+        movies.forEach((movie) => {
+          const item = document.createElement("div");
+          item.classList.add("list-search-result-card");
+
+          item.innerHTML = `
+            <img src="${getPosterPath(movie)}" alt="${movie.title}">
+            <div>
+              <h3>${movie.title}</h3>
+              <p>${getMovieYear(movie)}</p>
+              <button type="button" class="btn small-btn">Add to List</button>
+            </div>
+          `;
+
+          item.querySelector("button").addEventListener("click", async function () {
+            try {
+              const res = await fetch("api/lists.php?action=add_movie_to_owned_list", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  list_id: listId,
+                  tmdb_id: movie.id,
+                  title: movie.title,
+                  poster_path: movie.poster_path,
+                  release_date: movie.release_date,
+                  vote_average: movie.vote_average
+                })
+              });
+
+              const data = await res.json();
+
+              alert(data.message || "Movie added.");
+
+              if (data.success) {
+                location.reload();
+              }
+            } catch (err) {
+              console.error("Add movie to list error:", err);
+              alert("Unable to add movie.");
+            }
+          });
+
+          results.appendChild(item);
+        });
+
+        if (status) {
+          status.textContent = `Showing results for "${query}".`;
+        }
+      } catch (err) {
+        console.error("List detail search error:", err);
+
+        if (status) {
+          status.textContent = "Unable to search movies.";
+        }
+      }
+    });
+  }
+
+  document.querySelectorAll(".remove-detail-movie-btn").forEach((button) => {
+    button.addEventListener("click", async function () {
+      const confirmRemove = confirm("Remove this movie from the list?");
+
+      if (!confirmRemove) return;
+
+      try {
+        const res = await fetch("api/lists.php?action=remove_movie", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            list_id: button.dataset.listId,
+            tmdb_id: button.dataset.tmdbId
+          })
+        });
+
+        const data = await res.json();
+
+        alert(data.message || "Movie removed.");
+
+        if (data.success) {
+          location.reload();
+        }
+      } catch (err) {
+        console.error("Remove movie error:", err);
+        alert("Unable to remove movie.");
+      }
+    });
+  });
+}
+
+// =====================
+// PROFILE WATCHLIST REMOVE
+// =====================
+function setupProfileWatchlistRemove() {
+  const buttons = document.querySelectorAll(".remove-watchlist-btn");
+
+  if (!buttons.length) return;
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", async function () {
+      const confirmRemove = confirm("Remove this movie from your watchlist?");
+
+      if (!confirmRemove) return;
+
+      try {
+        const res = await fetch("api/watchlist.php?action=remove", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            tmdb_id: button.dataset.tmdbId
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          button.closest(".profile-watchlist-card").remove();
+        } else {
+          alert(data.message || "Unable to remove movie.");
+        }
+      } catch (err) {
+        console.error("Remove watchlist error:", err);
+        alert("Unable to remove movie from watchlist.");
+      }
+    });
+  });
+}
+
+// =====================
 // INIT
 // =====================
 updateAuthNav();
@@ -1366,3 +1627,5 @@ loadMovieDetails();
 setupJournalSearchModal();
 setupListsOverviewPage();
 setupCreateListPage();
+setupListDetailPage();
+setupProfileWatchlistRemove();

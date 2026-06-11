@@ -361,6 +361,126 @@ if ($method === "POST" && $action === "create_with_movies") {
     ]);
 }
 
+if ($method === "POST" && $action === "rename") {
+    $userId = requireLogin();
+    $data = getJsonInput();
+
+    $listId = (int) ($data["list_id"] ?? 0);
+    $listName = trim($data["list_name"] ?? "");
+
+    if (!$listId || $listName === "") {
+        sendJson([
+            "success" => false,
+            "message" => "Missing list information."
+        ]);
+    }
+
+    $stmt = $conn->prepare("
+        UPDATE user_lists
+        SET list_name = ?
+        WHERE id = ? AND user_id = ?
+    ");
+
+    if (!$stmt) {
+        sendJson([
+            "success" => false,
+            "message" => "Prepare failed: " . $conn->error
+        ]);
+    }
+
+    $stmt->bind_param("sii", $listName, $listId, $userId);
+
+    if (!$stmt->execute()) {
+        sendJson([
+            "success" => false,
+            "message" => "Rename failed: " . $stmt->error
+        ]);
+    }
+
+    sendJson([
+        "success" => true,
+        "message" => "List updated."
+    ]);
+}
+
+if ($method === "POST" && $action === "add_movie_to_owned_list") {
+    $userId = requireLogin();
+    $data = getJsonInput();
+
+    $listId = (int) ($data["list_id"] ?? 0);
+    $tmdbId = (int) ($data["tmdb_id"] ?? 0);
+    $title = trim($data["title"] ?? "");
+    $posterPath = $data["poster_path"] ?? null;
+    $releaseDate = $data["release_date"] ?? null;
+    $voteAverage = $data["vote_average"] ?? null;
+
+    if (!$listId || !$tmdbId || $title === "") {
+        sendJson([
+            "success" => false,
+            "message" => "Missing movie information."
+        ]);
+    }
+
+    $checkStmt = $conn->prepare("
+        SELECT id
+        FROM user_lists
+        WHERE id = ? AND user_id = ?
+    ");
+
+    if (!$checkStmt) {
+        sendJson([
+            "success" => false,
+            "message" => "Prepare failed: " . $conn->error
+        ]);
+    }
+
+    $checkStmt->bind_param("ii", $listId, $userId);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+
+    if ($checkResult->num_rows === 0) {
+        sendJson([
+            "success" => false,
+            "message" => "List not found."
+        ]);
+    }
+
+    $stmt = $conn->prepare("
+        INSERT INTO list_movies
+        (list_id, tmdb_id, title, poster_path, release_date, vote_average)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+
+    if (!$stmt) {
+        sendJson([
+            "success" => false,
+            "message" => "Prepare failed: " . $conn->error
+        ]);
+    }
+
+    $stmt->bind_param(
+        "iisssd",
+        $listId,
+        $tmdbId,
+        $title,
+        $posterPath,
+        $releaseDate,
+        $voteAverage
+    );
+
+    if (!$stmt->execute()) {
+        sendJson([
+            "success" => false,
+            "message" => "This movie is already in this list."
+        ]);
+    }
+
+    sendJson([
+        "success" => true,
+        "message" => "Movie added."
+    ]);
+}
+
 sendJson([
     "success" => false,
     "message" => "Invalid request."

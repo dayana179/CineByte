@@ -26,6 +26,16 @@ $listStmt = $db->prepare("
 
 $listStmt->execute([$_SESSION["user_id"]]);
 $userLists = $listStmt->fetchAll();
+
+$watchStmt = $db->prepare("
+    SELECT tmdb_id, title, poster_path, added_at
+    FROM watchlist
+    WHERE user_id = ?
+    ORDER BY added_at DESC
+");
+
+$watchStmt->execute([$_SESSION["user_id"]]);
+$watchlist = $watchStmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -101,8 +111,43 @@ $userLists = $listStmt->fetchAll();
       </section>
 
       <section id="watchlist" class="box">
-        <h2>To Watch List</h2>
-        <p>Your saved watchlist will appear here.</p>
+        <div class="profile-section-header">
+          <div>
+            <h2>To Watch List</h2>
+            <p class="muted-text">Movies you saved to watch later.</p>
+          </div>
+
+          <a href="films.html" class="btn btn-secondary">Browse Films</a>
+        </div>
+
+        <?php if (empty($watchlist)): ?>
+          <p>Your saved watchlist will appear here.</p>
+        <?php else: ?>
+          <div class="profile-watchlist-grid">
+            <?php foreach ($watchlist as $movie): ?>
+              <?php
+                $poster = !empty($movie["poster_path"])
+                  ? "https://image.tmdb.org/t/p/w500" . $movie["poster_path"]
+                  : "https://via.placeholder.com/500x750?text=No+Poster";
+              ?>
+
+            <article class="profile-watchlist-card">
+              <a href="film-detail.html?id=<?= e($movie["tmdb_id"]) ?>">
+                <img src="<?= e($poster) ?>" alt="<?= e($movie["title"]) ?>">
+                <h3><?= e($movie["title"]) ?></h3>
+              </a>
+
+              <button
+                type="button"
+                class="remove-watchlist-btn"
+                data-tmdb-id="<?= e($movie["tmdb_id"]) ?>"
+              >
+                Remove
+              </button>
+            </article>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
       </section>
 
       <section id="created" class="box">
@@ -157,9 +202,9 @@ $userLists = $listStmt->fetchAll();
                   </div>
                 <?php endif; ?>
 
-                  <a class="small-link" href="lists.html#createdListsSection">
-                    View list
-                  </a>
+                <a class="small-link" href="list-detail.php?id=<?= e($list["id"]) ?>">
+                  View / Edit List
+                </a>
                 </article>
             <?php endforeach; ?>
           </div>
