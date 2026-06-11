@@ -14,17 +14,22 @@ function toggleMenu() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+function setupMobileMenuClose() {
   const nav = document.getElementById("mainNav");
   const menuBtn = document.querySelector(".menu-toggle");
 
+  if (!nav) return;
+
   document.querySelectorAll("#mainNav a").forEach((link) => {
     link.addEventListener("click", () => {
-      if (nav) nav.classList.remove("show");
-      if (menuBtn) menuBtn.textContent = "☰";
+      nav.classList.remove("show");
+
+      if (menuBtn) {
+        menuBtn.textContent = "☰";
+      }
     });
   });
-});
+}
 
 // =====================
 // TMDB API SETUP
@@ -1646,13 +1651,16 @@ document.addEventListener("click", function (event) {
 // =====================
 // INIT
 // =====================
-updateAuthNav();
-loadMovies();
-setupHeaderSearch();
-setupFilmBrowser();
-loadMovieDetails();
-setupJournalSearchModal();
-setupListsOverviewPage();
-setupCreateListPage();
-setupListDetailPage();
-setupProfileWatchlistRemove();
+document.addEventListener("DOMContentLoaded", function () {
+  setupMobileMenuClose();
+  updateAuthNav();
+  loadMovies();
+  setupHeaderSearch();
+  setupFilmBrowser();
+  loadMovieDetails();
+  setupJournalSearchModal();
+  setupListsOverviewPage();
+  setupCreateListPage();
+  setupListDetailPage();
+  setupProfileWatchlistRemove();
+});
