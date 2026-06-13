@@ -34,43 +34,81 @@ if ($isVideo) {
     $genres = implode(' &bull; ', array_column($movie['genres'] ?? [], 'name'));
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_watchlist') {
-    if (!isLoggedIn()) redirect('login.php');
+// POST Handling (Watchlist and Comments)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
 
-    $db = getDB();
+    if ($action === 'add_watchlist') {
+        if (!isLoggedIn()) redirect('login.php');
+        $db = getDB();
 
-    if ($isVideo) {
-        $stmt = $db->prepare(
-            'INSERT IGNORE INTO watchlist (user_id, content_type, youtube_id, title, poster_path)
-             VALUES (?, ?, ?, ?, ?)'
-        );
+        if ($isVideo) {
+            $stmt = $db->prepare(
+                'INSERT IGNORE INTO watchlist (user_id, content_type, youtube_id, title, poster_path)
+                 VALUES (?, ?, ?, ?, ?)'
+            );
+            $stmt->execute([
+                $_SESSION['user_id'],
+                'video',
+                $youtubeId,
+                $videoTitle,
+                $thumbnail
+            ]);
+            $watchlistMsg = e($videoTitle) . ' added to your watchlist!';
+        } else {
+            $stmt = $db->prepare(
+                'INSERT IGNORE INTO watchlist (user_id, content_type, tmdb_id, title, poster_path)
+                 VALUES (?, ?, ?, ?, ?)'
+            );
+            $stmt->execute([
+                $_SESSION['user_id'],
+                'film',
+                $id,
+                $movie['title'],
+                $movie['poster_path'] ?? ''
+            ]);
+            $watchlistMsg = e($movie['title']) . ' added to your watchlist!';
+        }
+    } 
+    // Handle adding comments
+    elseif ($action === 'add_comment') {
+        if (!isLoggedIn()) redirect('login.php');
 
-        $stmt->execute([
-            $_SESSION['user_id'],
-            'video',
-            $youtubeId,
-            $videoTitle,
-            $thumbnail
-        ]);
+        $commentText = trim($_POST['comment_text'] ?? '');
+        if (!empty($commentText)) {
+            $db = getDB();
+            $contentId = $isVideo ? $youtubeId : (string)$id;
 
-        $watchlistMsg = e($videoTitle) . ' added to your watchlist!';
-    } else {
-        $stmt = $db->prepare(
-            'INSERT IGNORE INTO watchlist (user_id, content_type, tmdb_id, title, poster_path)
-             VALUES (?, ?, ?, ?, ?)'
-        );
+            $stmt = $db->prepare(
+                'INSERT INTO comments (user_id, content_type, content_id, comment_text)
+                 VALUES (?, ?, ?, ?)'
+            );
+            $stmt->execute([
+                $_SESSION['user_id'],
+                $type,
+                $contentId,
+                $commentText
+            ]);
 
-        $stmt->execute([
-            $_SESSION['user_id'],
-            'film',
-            $id,
-            $movie['title'],
-            $movie['poster_path'] ?? ''
-        ]);
-
-        $watchlistMsg = e($movie['title']) . ' added to your watchlist!';
+            // Redirect back to the exact same page state to cleanly refresh and show the comment
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            exit;
+        }
     }
 }
+
+// Fetch dynamic comments for this specific item
+$db = getDB();
+$contentId = $isVideo ? $youtubeId : (string)$id;
+$commentStmt = $db->prepare(
+    'SELECT comments.*, users.username 
+     FROM comments 
+     JOIN users ON comments.user_id = users.id 
+     WHERE comments.content_type = ? AND comments.content_id = ? 
+     ORDER BY comments.created_at DESC'
+);
+$commentStmt->execute([$type, $contentId]);
+$comments = $commentStmt->fetchAll();
 ?>
 
 <?php include 'includes/header.php'; ?>
@@ -111,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_w
             src="https://www.youtube.com/embed/<?= e($youtubeId) ?>"
             title="<?= e($videoTitle) ?>"
             allowfullscreen>
-          </iframe>
+          </iframe >
         </div>
 
       <?php else: ?>
@@ -160,13 +198,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_w
     </div>
   </section>
 
-  <section class="content-section">
-    <h2>User Reviews</h2>
+  <section class="content-section" style="margin-top: 40px;">
+    <h2>Comments (<?= count($comments) ?>)</h2>
 
-    <article class="review-box">
-      <strong>Sample User</strong>
-      <p>Great visual style and strong storytelling. Worth watching.</p>
-    </article>
+    <div class="comment-input-area" style="margin-bottom: 30px;">
+      <?php if (isLoggedIn()): ?>
+        <form method="POST" action="">
+          <input type="hidden" name="action" value="add_comment">
+          <div style="display: flex; gap: 15px; align-items: flex-start;">
+            <div style="width: 40px; height: 40px; background: #e91e63; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; flex-shrink: 0;">
+              <?= e(strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1))) ?>
+            </div>
+            <div style="flex-grow: 1;">
+              <textarea 
+                name="comment_text" 
+                placeholder="Add a comment..." 
+                required 
+                style="width: 100%; min-height: 40px; background: transparent; border: none; border-bottom: 2px solid #444; color: #fff; padding: 5px 0; resize: vertical; outline: none; font-family: inherit; transition: border-color 0.2s;"
+                onfocus="this.style.borderColor='#fff'"
+                onblur="this.style.borderColor='#444'"
+              ></textarea>
+              <div style="text-align: right; margin-top: 8px;">
+                <button type="submit" class="btn" style="padding: 6px 14px; font-size: 13px;">Comment</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      <?php else: ?>
+        <p style="color: #aaa; background: #222; padding: 15px; border-radius: 6px;">
+          Please <a href="login.php" style="color: #4caf50; text-decoration: underline;">log in</a> to participate in the discussion.
+        </p>
+      <?php endif; ?>
+    </div>
+
+    <div class="comments-display-list">
+      <?php if (empty($comments)): ?>
+        <p style="color: #666; font-style: italic;">No comments yet. Start the conversation!</p>
+      <?php else: ?>
+        <?php foreach ($comments as $comment): ?>
+          <article class="review-box" style="display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 15px;">
+            <div style="width: 40px; height: 40px; background: #555; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+              <?= e(strtoupper(substr($comment['username'], 0, 1))) ?>
+            </div>
+            <div>
+              <div style="margin-bottom: 4px;">
+                <strong style="color: #fff; font-size: 14px;"><?= e($comment['username']) ?></strong>
+                <span style="color: #666; font-size: 11px; margin-left: 8px;">
+                  <?= date('M d, Y', strtotime($comment['created_at'])) ?>
+                </span>
+              </div>
+              <p style="margin: 0; color: #ccc; font-size: 14px; white-space: pre-wrap; line-height: 1.4;">
+                <?= e($comment['comment_text']) ?>
+              </p>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
   </section>
 </main>
 
