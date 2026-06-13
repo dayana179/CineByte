@@ -25,6 +25,7 @@ if (!isset($_SESSION["user_id"])) {
     <nav id="mainNav">
       <a href="index.html">Home</a>
       <a href="films.html">Films</a>
+      <a href="videos.php">Videos</a>
       <a href="lists.html">Lists</a>
       <a href="profile.php">Profile</a>
 

@@ -1592,46 +1592,7 @@ function setupListDetailPage() {
   });
 }
 
-// =====================
-// PROFILE WATCHLIST REMOVE
-// =====================
-function setupProfileWatchlistRemove() {
-  const buttons = document.querySelectorAll(".remove-watchlist-btn");
 
-  if (!buttons.length) return;
-
-  buttons.forEach((button) => {
-    button.addEventListener("click", async function () {
-      const confirmRemove = confirm("Remove this movie from your watchlist?");
-
-      if (!confirmRemove) return;
-
-      try {
-        const res = await fetch("api/watchlist.php?action=remove", {
-          method: "POST",
-          credentials: "same-origin",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            tmdb_id: button.dataset.tmdbId
-          })
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          button.closest(".profile-watchlist-card").remove();
-        } else {
-          alert(data.message || "Unable to remove movie.");
-        }
-      } catch (err) {
-        console.error("Remove watchlist error:", err);
-        alert("Unable to remove movie from watchlist.");
-      }
-    });
-  });
-}
 
 document.addEventListener("click", function (event) {
   const nav = document.getElementById("mainNav");
@@ -1648,6 +1609,8 @@ document.addEventListener("click", function (event) {
   }
 });
 
+
+
 // =====================
 // INIT
 // =====================
@@ -1663,4 +1626,5 @@ document.addEventListener("DOMContentLoaded", function () {
   setupCreateListPage();
   setupListDetailPage();
   setupProfileWatchlistRemove();
+
 });
