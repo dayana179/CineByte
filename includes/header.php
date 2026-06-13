@@ -14,7 +14,7 @@
   <nav id="mainNav">
     <a href="index.php">Home</a>
     <a href="films.php">Films</a>
-     <a href="videos.html">Videos</a>
+    <a href="videos.php">Videos</a>
     <a href="lists.php">Lists</a>
     <a href="profile.php">Profile</a>
 

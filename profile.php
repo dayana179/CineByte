@@ -2,15 +2,43 @@
 require_once 'includes/init.php';
 
 if (!isset($_SESSION["user_id"])) {
-    header("Location: login.html");
+    header("Location: login.php");
     exit();
 }
 
-$username = $_SESSION["username"];
-$email = $_SESSION["email"];
-
 $db = getDB();
 
+$userId = $_SESSION["user_id"];
+$username = $_SESSION["username"] ?? "User";
+$email = $_SESSION["email"] ?? "";
+
+/* Remove from watchlist */
+if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["action"] ?? "") === "remove_watchlist") {
+    $contentType = $_POST["content_type"] ?? "film";
+
+    if ($contentType === "video") {
+        $youtubeId = $_POST["youtube_id"] ?? "";
+
+        $stmt = $db->prepare("
+            DELETE FROM watchlist
+            WHERE user_id = ? AND content_type = 'video' AND youtube_id = ?
+        ");
+        $stmt->execute([$userId, $youtubeId]);
+    } else {
+        $tmdbId = (int)($_POST["tmdb_id"] ?? 0);
+
+        $stmt = $db->prepare("
+            DELETE FROM watchlist
+            WHERE user_id = ? AND content_type = 'film' AND tmdb_id = ?
+        ");
+        $stmt->execute([$userId, $tmdbId]);
+    }
+
+    header("Location: profile.php#watchlist");
+    exit();
+}
+
+/* User created lists */
 $listStmt = $db->prepare("
     SELECT 
         ul.id,
@@ -23,19 +51,34 @@ $listStmt = $db->prepare("
     GROUP BY ul.id, ul.list_name, ul.created_at
     ORDER BY ul.created_at DESC
 ");
-
-$listStmt->execute([$_SESSION["user_id"]]);
+$listStmt->execute([$userId]);
 $userLists = $listStmt->fetchAll();
 
+/* Watchlist, supports films and videos */
 $watchStmt = $db->prepare("
-    SELECT tmdb_id, title, poster_path, added_at
+    SELECT 
+        tmdb_id,
+        youtube_id,
+        content_type,
+        title,
+        poster_path,
+        added_at
     FROM watchlist
     WHERE user_id = ?
     ORDER BY added_at DESC
 ");
-
-$watchStmt->execute([$_SESSION["user_id"]]);
+$watchStmt->execute([$userId]);
 $watchlist = $watchStmt->fetchAll();
+
+/* Journals, supports films and videos */
+$journalStmt = $db->prepare("
+    SELECT *
+    FROM journals
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+");
+$journalStmt->execute([$userId]);
+$journals = $journalStmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -54,20 +97,15 @@ $watchlist = $watchStmt->fetchAll();
 
   <nav id="mainNav">
     <a href="index.html">Home</a>
-    <a href="films.html">Films</a>
-    <a href="videos.html">Videos</a>
+    <a href="films.php">Films</a>
+    <a href="videos.php">Videos</a>
     <a href="lists.html">Lists</a>
     <a href="profile.php">Profile</a>
+
     <div class="header-search">
       <button type="button" id="headerSearchToggle" class="header-search-btn" aria-label="Open search">
-        <svg
-          class="search-icon"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            d="M10.8 5.2a5.6 5.6 0 1 1 0 11.2a5.6 5.6 0 0 1 0-11.2Zm0-1.7a7.3 7.3 0 1 0 4.55 13.02l3.56 3.56a.9.9 0 0 0 1.27-1.27l-3.56-3.56A7.3 7.3 0 0 0 10.8 3.5Z"
-          />
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10.8 5.2a5.6 5.6 0 1 1 0 11.2a5.6 5.6 0 0 1 0-11.2Zm0-1.7a7.3 7.3 0 1 0 4.55 13.02l3.56 3.56a.9.9 0 0 0 1.27-1.27l-3.56-3.56A7.3 7.3 0 0 0 10.8 3.5Z"/>
         </svg>
       </button>
 
@@ -78,12 +116,11 @@ $watchlist = $watchStmt->fetchAll();
           placeholder="Search films..."
           autocomplete="off"
         />
-
         <div id="headerSearchResults" class="header-search-results"></div>
       </div>
     </div>
 
-    <a href="login.html" id="authNav">Login</a>
+    <a href="logout.php" id="authNav">Logout</a>
   </nav>
 </header>
 
@@ -100,58 +137,82 @@ $watchlist = $watchStmt->fetchAll();
       <a href="#watchlist">To Watch List</a>
       <a href="#created">Created List</a>
       <a href="#journal">Added Journal</a>
-      <a href="#settings">Settings</a>
+      <a href="#accountSettings">Settings</a>
     </aside>
 
     <div class="profile-content">
+
       <section id="profileInfo" class="box">
         <h2>Active Account</h2>
-        <p><strong>Username:</strong> <?php echo htmlspecialchars($username); ?></p>
-        <p><strong>Email:</strong> <?php echo htmlspecialchars($email); ?></p>
+        <p><strong>Username:</strong> <?= e($username) ?></p>
+        <p><strong>Email:</strong> <?= e($email) ?></p>
         <p class="user-status">Status: Logged in</p>
       </section>
 
-      <section id="settings" class="box">
-          <h2>Account Settings</h2>
-          <p class="muted-text">Change your username and password.</p>
-          <a href="settings.php" class="btn">Go to Settings</a>
+      <section id="accountSettings" class="box">
+        <h2>Account Settings</h2>
+        <p class="muted-text">Change your username and password.</p>
+        <a href="settings.php" class="btn">Go to Settings</a>
       </section>
 
       <section id="watchlist" class="box">
         <div class="profile-section-header">
           <div>
             <h2>To Watch List</h2>
-            <p class="muted-text">Movies you saved to watch later.</p>
+            <p class="muted-text">Films and YouTube videos you saved to watch later.</p>
           </div>
 
-          <a href="films.html" class="btn btn-secondary">Browse Films</a>
+          <div>
+            <a href="films.php" class="btn btn-secondary">Browse Films</a>
+            <a href="videos.php" class="btn btn-secondary">Browse Videos</a>
+          </div>
         </div>
 
         <?php if (empty($watchlist)): ?>
           <p>Your saved watchlist will appear here.</p>
         <?php else: ?>
           <div class="profile-watchlist-grid">
-            <?php foreach ($watchlist as $movie): ?>
+            <?php foreach ($watchlist as $item): ?>
               <?php
-                $poster = !empty($movie["poster_path"])
-                  ? "https://image.tmdb.org/t/p/w500" . $movie["poster_path"]
-                  : "https://via.placeholder.com/500x750?text=No+Poster";
+                $type = $item["content_type"] ?? "film";
+
+                if ($type === "video") {
+                    $poster = !empty($item["youtube_id"])
+                        ? "https://img.youtube.com/vi/" . $item["youtube_id"] . "/hqdefault.jpg"
+                        : "https://via.placeholder.com/500x750?text=No+Thumbnail";
+
+                    $detailLink = "film-detail.php?type=video&youtube=" . urlencode($item["youtube_id"]) . "&title=" . urlencode($item["title"]);
+                } else {
+                    $poster = !empty($item["poster_path"])
+                        ? "https://image.tmdb.org/t/p/w500" . $item["poster_path"]
+                        : "https://via.placeholder.com/500x750?text=No+Poster";
+
+                    $detailLink = "film-detail.php?id=" . urlencode($item["tmdb_id"]);
+                }
               ?>
 
-            <article class="profile-watchlist-card">
-              <a href="film-detail.html?id=<?= e($movie["tmdb_id"]) ?>">
-                <img src="<?= e($poster) ?>" alt="<?= e($movie["title"]) ?>">
-                <h3><?= e($movie["title"]) ?></h3>
-              </a>
+              <article class="profile-watchlist-card">
+                <a href="<?= e($detailLink) ?>">
+                  <img src="<?= e($poster) ?>" alt="<?= e($item["title"]) ?>">
+                  <h3><?= e($item["title"]) ?></h3>
+                  <p class="muted-text"><?= $type === "video" ? "YouTube Video" : "Film" ?></p>
+                </a>
 
-              <button
-                type="button"
-                class="remove-watchlist-btn"
-                data-tmdb-id="<?= e($movie["tmdb_id"]) ?>"
-              >
-                Remove
-              </button>
-            </article>
+                <form method="POST" onsubmit="return confirm('Remove this item from your watchlist?');">
+                <input type="hidden" name="action" value="remove_watchlist">
+                <input type="hidden" name="content_type" value="<?= e($type) ?>">
+
+                <?php if ($type === "video"): ?>
+                  <input type="hidden" name="youtube_id" value="<?= e($item["youtube_id"]) ?>">
+                <?php else: ?>
+                  <input type="hidden" name="tmdb_id" value="<?= e($item["tmdb_id"]) ?>">
+                <?php endif; ?>
+
+                <button type="submit" class="remove-watchlist-btn">
+                  Remove
+                </button>
+              </form> 
+              </article>
             <?php endforeach; ?>
           </div>
         <?php endif; ?>
@@ -187,6 +248,7 @@ $watchlist = $watchStmt->fetchAll();
 
               <article class="profile-list-card">
                 <h3><?= e($list["list_name"]) ?></h3>
+
                 <p class="user-list-meta">
                   <?= e($list["movie_count"]) ?> movie<?= $list["movie_count"] == 1 ? "" : "s" ?>
                 </p>
@@ -202,7 +264,7 @@ $watchlist = $watchStmt->fetchAll();
                           : "https://via.placeholder.com/500x750?text=No+Poster";
                       ?>
 
-                      <a href="film-detail.html?id=<?= e($movie["tmdb_id"]) ?>">
+                      <a href="film-detail.php?id=<?= e($movie["tmdb_id"]) ?>">
                         <img src="<?= e($poster) ?>" alt="<?= e($movie["title"]) ?>">
                       </a>
                     <?php endforeach; ?>
@@ -212,7 +274,7 @@ $watchlist = $watchStmt->fetchAll();
                 <a class="small-link" href="list-detail.php?id=<?= e($list["id"]) ?>">
                   View / Edit List
                 </a>
-                </article>
+              </article>
             <?php endforeach; ?>
           </div>
         <?php endif; ?>
@@ -221,40 +283,50 @@ $watchlist = $watchStmt->fetchAll();
       <section id="journal" class="box">
         <h2>Added Journal</h2>
 
-        <?php
-        $stmt = $db->prepare(
-            "SELECT * FROM journals WHERE user_id = ? ORDER BY created_at DESC"
-        );
-
-        $stmt->execute([$_SESSION['user_id']]);
-        $journals = $stmt->fetchAll();
-
-        if (empty($journals)):
-        ?>
+        <?php if (empty($journals)): ?>
           <p>Your journal entries will appear here.</p>
         <?php else: ?>
           <?php foreach ($journals as $j): ?>
+            <?php
+              $journalType = $j["content_type"] ?? "film";
+
+              if ($journalType === "video") {
+                  $journalLink = "film-detail.php?type=video&youtube=" . urlencode($j["youtube_id"] ?? "") . "&title=" . urlencode($j["title"]);
+              } else {
+                  $journalLink = "film-detail.php?id=" . urlencode($j["tmdb_id"] ?? "");
+              }
+            ?>
+
             <div class="review-box">
-              <h3><?= e($j['title']) ?></h3>
-              <p>⭐ <?= e($j['rating']) ?>/10</p>
-              <p><?= e($j['review']) ?></p>
+              <h3>
+                <a href="<?= e($journalLink) ?>">
+                  <?= e($j["title"]) ?>
+                </a>
+              </h3>
+
+              <p class="muted-text">
+                <?= $journalType === "video" ? "YouTube Video Review" : "Film Review" ?>
+              </p>
+
+              <p>⭐ <?= e($j["rating"]) ?>/10</p>
+              <p><?= e($j["review"]) ?></p>
             </div>
           <?php endforeach; ?>
         <?php endif; ?>
       </section>
 
-      <section id="settings" class="box">
+      <section class="box">
         <a class="btn" href="logout.php">Logout</a>
       </section>
+
     </div>
   </section>
 </main>
 
-<footer>
+<footer> 
   <p>&copy; 2026 CineByte. Web Design Project.</p>
 </footer>
-
-  <div id="journalSearchModal" class="journal-modal">
+<div id="journalSearchModal" class="journal-modal">
     <div class="journal-modal-box">
       <div class="journal-modal-header">
         <h2>Add to your journal...</h2>
