@@ -63,7 +63,7 @@ async function updateAuthNav() {
       };
     } else {
       authNav.textContent = "Login";
-      authNav.href = "login.html";
+      authNav.href = "login.php";
       authNav.classList.remove("journal-open-btn");
       authNav.onclick = null;
     }

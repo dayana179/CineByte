@@ -1,24 +1,44 @@
-<?php $user = currentUser(); ?>
+<?php
+if (!isset($pageTitle)) {
+    $pageTitle = 'Home';
+}
+
+$user = function_exists('currentUser') ? currentUser() : null;
+$currentPage = basename($_SERVER['PHP_SELF']);
+
+function activeNav($pageName, $currentPage) {
+    return $pageName === $currentPage ? 'active-nav' : '';
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CineByte | <?= e($pageTitle ?? 'Home') ?></title>
+
+  <title>CineByte | <?= e($pageTitle) ?></title>
+
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 <header class="site-header">
   <a href="index.php" class="logo">CineByte</a>
-  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-  <nav id="mainNav">
-    <a href="index.php">Home</a>
-    <a href="films.php">Films</a>
-    <a href="videos.php">Videos</a>
-    <a href="lists.php">Lists</a>
-    <a href="profile.php">Profile</a>
 
-        <div class="header-search">
+  <button class="menu-toggle" type="button" onclick="toggleMenu()">☰</button>
+
+  <nav id="mainNav">
+    <a href="index.php" class="<?= activeNav('index.php', $currentPage) ?>">Home</a>
+    <a href="films.php" class="<?= activeNav('films.php', $currentPage) ?>">Films</a>
+    <a href="videos.php" class="<?= activeNav('videos.php', $currentPage) ?>">Videos</a>
+    <a href="lists.php" class="<?= activeNav('lists.php', $currentPage) ?>">Lists</a>
+
+    <?php if ($user): ?>
+      <a href="profile.php" class="<?= activeNav('profile.php', $currentPage) ?>">Profile</a>
+    <?php endif; ?>
+
+    <div class="header-search">
       <button type="button" id="headerSearchToggle" class="header-search-btn" aria-label="Open search">
         <svg
           class="search-icon"
@@ -42,11 +62,18 @@
         <div id="headerSearchResults" class="header-search-results"></div>
       </div>
     </div>
-    
+
     <?php if ($user): ?>
-      <a href="#" id="authNav" class="journal-open-btn" onclick="openJournalModal(); return false;">+ Journal</a>
+      <a
+        href="#"
+        id="authNav"
+        class="journal-open-btn"
+        onclick="openJournalModal(); return false;"
+      >
+        + Journal
+      </a>
     <?php else: ?>
-      <a href="login.html" id="authNav">Login</a>
+      <a href="login.php" id="authNav">Login</a>
     <?php endif; ?>
-    </nav>
+  </nav>
 </header>

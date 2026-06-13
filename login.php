@@ -1,37 +1,66 @@
 <?php
-session_start();
-require_once "db.php";
+require_once 'includes/init.php';
 
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    header("Location: login.html");
+$pageTitle = 'Login';
+
+if (currentUser()) {
+    header('Location: profile.php');
     exit();
 }
-
-$email = trim($_POST["email"]);
-$password = $_POST["password"];
-
-$stmt = $conn->prepare("SELECT id, username, email, password_hash FROM users WHERE email = ?");
-$stmt->bind_param("s", $email);
-$stmt->execute();
-
-$result = $stmt->get_result();
-
-if ($result->num_rows !== 1) {
-    header("Location: login.html?error=notfound");
-    exit();
-}
-
-$user = $result->fetch_assoc();
-
-if (!password_verify($password, $user["password_hash"])) {
-    header("Location: login.html?error=password");
-    exit();
-}
-
-$_SESSION["user_id"] = $user["id"];
-$_SESSION["username"] = $user["username"];
-$_SESSION["email"] = $user["email"];
-
-header("Location: profile.php");
-exit();
 ?>
+
+<?php include 'includes/header.php'; ?>
+
+<main>
+  <section class="page-header">
+    <h1>Login</h1>
+    <p>Access your CineByte account.</p>
+  </section>
+
+  <section class="content-section auth-single-layout">
+    <div class="box auth-card">
+      <h2>Welcome Back</h2>
+
+      <?php if (isset($_GET['error'])): ?>
+        <div class="auth-message">
+          <?= e($_GET['error']) ?>
+        </div>
+      <?php endif; ?>
+
+      <?php if (isset($_GET['success'])): ?>
+        <div class="auth-message">
+          <?= e($_GET['success']) ?>
+        </div>
+      <?php endif; ?>
+
+      <form action="process_login.php" method="POST">
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          required
+        />
+
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+
+        <a href="forgot_password.php" class="forgot-password-link">
+          Forgot password?
+        </a>
+
+        <button type="submit" class="btn">Login</button>
+      </form>
+
+      <p class="auth-switch">
+        Do not have an account?
+        <a href="signup.php">Sign up</a>
+      </p>
+    </div>
+  </section>
+</main>
+
+<?php include 'includes/footer.php'; ?>

@@ -1,57 +1,63 @@
 <?php
+require_once 'includes/init.php';
 
-session_start();
-require_once "db.php";
+$pageTitle = 'Sign Up';
 
-$username = trim($_POST["username"]);
-$email = trim($_POST["email"]);
-$password = $_POST["password"];
-
-$check = $conn->prepare(
-"SELECT id FROM users WHERE email=?"
-);
-
-$check->bind_param("s",$email);
-$check->execute();
-
-$result = $check->get_result();
-
-if($result->num_rows > 0)
-{
-    header("Location: signup.html?error=email");
+if (currentUser()) {
+    header('Location: profile.php');
     exit();
 }
-
-$passwordHash =
-password_hash(
-$password,
-PASSWORD_DEFAULT
-);
-
-$stmt = $conn->prepare(
-"INSERT INTO users(username,email,password_hash)
-VALUES(?,?,?)"
-);
-
-$stmt->bind_param(
-"sss",
-$username,
-$email,
-$passwordHash
-);
-
-$stmt->execute();
-
-$_SESSION["user_id"] =
-$stmt->insert_id;
-
-$_SESSION["username"] =
-$username;
-
-$_SESSION["email"] =
-$email;
-
-header("Location: login.html");
-exit();
-
 ?>
+
+<?php include 'includes/header.php'; ?>
+
+<main>
+  <section class="page-header">
+    <h1>Sign Up</h1>
+    <p>Create your CineByte account.</p>
+  </section>
+
+  <section class="content-section auth-single-layout">
+    <div class="box auth-card">
+      <h2>Create Account</h2>
+
+      <?php if (isset($_GET['error'])): ?>
+        <div class="auth-message">
+          <?= e($_GET['error']) ?>
+        </div>
+      <?php endif; ?>
+
+      <form action="process_signup.php" method="POST">
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
+          required
+        />
+
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          required
+        />
+
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+
+        <button type="submit" class="btn">Sign Up</button>
+      </form>
+
+      <p class="auth-switch">
+        Already have an account?
+        <a href="login.php">Login</a>
+      </p>
+    </div>
+  </section>
+</main>
+
+<?php include 'includes/footer.php'; ?>

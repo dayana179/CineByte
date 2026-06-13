@@ -6,6 +6,7 @@ $data   = tmdbFetch('/movie/popular', ['page' => 1]);
 $movies = array_slice($data['results'] ?? [], 0, 3);
 ?>
 <?php include 'includes/header.php'; ?>
+<!-- <link rel="stylesheet" href="style.css" /> -->
 
 <main>
   <section class="hero">

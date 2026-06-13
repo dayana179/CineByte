@@ -1,40 +1,71 @@
 <?php
-session_start();
-require_once "db.php";
+require_once 'includes/init.php';
 
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    header("Location: reset_password.html");
+$pageTitle = 'Reset Password';
+
+if (currentUser()) {
+    header('Location: profile.php');
     exit();
 }
 
-if (!isset($_SESSION["reset_email"])) {
-    header("Location: reset_password.html?error=expired");
-    exit();
-}
-
-$newPassword = $_POST["new_password"];
-$confirmPassword = $_POST["confirm_password"];
-
-if (strlen($newPassword) < 6) {
-    header("Location: reset_password.html?error=short");
-    exit();
-}
-
-if ($newPassword !== $confirmPassword) {
-    header("Location: reset_password.html?error=mismatch");
-    exit();
-}
-
-$email = $_SESSION["reset_email"];
-$passwordHash = password_hash($newPassword, PASSWORD_DEFAULT);
-
-$stmt = $conn->prepare("UPDATE users SET password_hash = ? WHERE email = ?");
-$stmt->bind_param("ss", $passwordHash, $email);
-$stmt->execute();
-
-unset($_SESSION["reset_email"]);
-
-header("Location: login.html?reset=success");
-exit();
+$token = $_GET['token'] ?? '';
 ?>
 
+<?php include 'includes/header.php'; ?>
+
+<main>
+  <section class="page-header">
+    <h1>Reset Password</h1>
+    <p>Create a new password for your CineByte account.</p>
+  </section>
+
+  <section class="content-section auth-single-layout">
+    <div class="box auth-card">
+      <h2>New Password</h2>
+
+      <?php if (isset($_GET['error'])): ?>
+        <div class="auth-message">
+          <?= e($_GET['error']) ?>
+        </div>
+      <?php endif; ?>
+
+      <?php if (empty($token)): ?>
+        <p class="muted-text">Invalid reset link.</p>
+        <a href="forgot_password.php" class="btn btn-secondary">
+          Request New Link
+        </a>
+      <?php else: ?>
+        <form action="process_reset_password.php" method="POST">
+          <input
+            type="hidden"
+            name="token"
+            value="<?= e($token) ?>"
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="New password"
+            required
+          />
+
+          <input
+            type="password"
+            name="confirm_password"
+            placeholder="Confirm new password"
+            required
+          />
+
+          <button type="submit" class="btn">Reset Password</button>
+        </form>
+      <?php endif; ?>
+
+      <p class="auth-switch">
+        Back to
+        <a href="login.php">Login</a>
+      </p>
+    </div>
+  </section>
+</main>
+
+<?php include 'includes/footer.php'; ?>
