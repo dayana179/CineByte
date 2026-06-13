@@ -1489,3 +1489,53 @@ html {
     margin: 10px auto 0;
   }
 }
+
+/* YouTube tracker */
+.youtube-form label {
+  display: block;
+  margin: 14px 0 6px;
+  color: #ddd;
+  font-weight: 600;
+}
+
+.form-message {
+  color: #ffb3b3;
+  margin-top: 12px;
+}
+
+.youtube-player {
+  margin-top: 25px;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-heading-row {
+  margin-top: 35px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.section-heading-row span {
+  color: #aaa;
+}
+
+.youtube-item .btn {
+  margin-top: 10px;
+  margin-right: 8px;
+}
+
+.youtube-help {
+  margin-top: 10px;
+  color: #aaa;
+  font-size: 0.95rem;
+}
+
+.youtube-help a {
+  color: #ff4b2b;
+  font-weight: 700;
+}

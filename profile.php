@@ -55,6 +55,7 @@ $watchlist = $watchStmt->fetchAll();
   <nav id="mainNav">
     <a href="index.html">Home</a>
     <a href="films.html">Films</a>
+    <a href="videos.html">Videos</a>
     <a href="lists.html">Lists</a>
     <a href="profile.php">Profile</a>
     <div class="header-search">
