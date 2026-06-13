@@ -268,6 +268,8 @@ async function searchHeaderMovies(query) {
   }
 }
 
+//dayana journal button modal
+
 function openJournalModal() {
   const modal = document.getElementById("journalSearchModal");
   const input = document.getElementById("journalSearchInput");
@@ -295,7 +297,36 @@ function closeJournalModal() {
 }
 
 let journalSearchTimer = null;
+//meoedit for youtube
+function extractYouTubeId(url) {
+  if (!url) return null;
 
+  const trimmed = url.trim();
+
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const host = parsed.hostname.replace("www.", "");
+
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      if (parsed.pathname === "/watch") {
+        return parsed.searchParams.get("v");
+      }
+    }
+
+    if (host === "youtu.be") {
+      return parsed.pathname.replace("/", "");
+    }
+  } catch (e) {
+    return null;
+  }
+
+  return null;
+}
+//meo end edit for youtube journal modal
 function setupJournalSearchModal() {
   const modal = document.getElementById("journalSearchModal");
   const closeBtn = document.getElementById("journalModalClose");
@@ -313,23 +344,51 @@ function setupJournalSearchModal() {
   });
 
   input.addEventListener("input", function () {
-    const query = input.value.trim();
 
-    clearTimeout(journalSearchTimer);
+  const query = input.value.trim();
 
-    if (query.length < 2) {
-      results.innerHTML = `<p class="journal-modal-empty">Type at least 2 letters.</p>`;
-      return;
-    }
+  clearTimeout(journalSearchTimer);
 
-    results.innerHTML = `<p class="journal-modal-empty">Searching...</p>`;
+  const youtubeId = extractYouTubeId(query);
 
-    journalSearchTimer = setTimeout(() => {
-      searchJournalMovies(query);
-    }, 350);
-  });
+  if (youtubeId) {
+
+    const thumbnail =
+      `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+
+    results.innerHTML = `
+      <a
+        class="journal-modal-result"
+        href="journal.php?type=video&youtube=${youtubeId}&title=YouTube%20Video&poster=${encodeURIComponent(thumbnail)}">
+
+        <img src="${thumbnail}" alt="YouTube Video">
+
+        <div>
+          <h4>YouTube Video</h4>
+          <p>Click to add journal entry</p>
+        </div>
+
+      </a>
+    `;
+
+    return;
+  }
+
+  if (query.length < 2) {
+    results.innerHTML =
+      `<p class="journal-modal-empty">Type at least 2 letters.</p>`;
+    return;
+  }
+
+  results.innerHTML =
+    `<p class="journal-modal-empty">Searching...</p>`;
+
+  journalSearchTimer = setTimeout(() => {
+    searchJournalMovies(query);
+  }, 350);
+});
 }
-
+//end dayana journal entry modal
 async function searchJournalMovies(query) {
   const results = document.getElementById("journalSearchResults");
   if (!results) return;
@@ -1608,7 +1667,6 @@ document.addEventListener("click", function (event) {
     menuBtn.textContent = "☰";
   }
 });
-
 
 
 // =====================

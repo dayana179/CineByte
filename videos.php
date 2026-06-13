@@ -243,11 +243,6 @@ if (empty($activeVideo) && !empty($videos)) {
             time<?= (int)$video['views_tracked'] === 1 ? '' : 's' ?>
           </p>
 
-          <a
-            class="btn"
-            href="videos.php?play=<?= urlencode($video['youtube_id']) ?>">
-            Play
-          </a>
 
           <a
             class="btn"
