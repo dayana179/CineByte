@@ -2,10 +2,44 @@
 require_once 'includes/init.php';
 
 $pageTitle = 'Forgot Password';
+$error = '';
 
-if (currentUser()) {
-    header('Location: profile.php');
-    exit();
+function startPasswordReset($email) {
+    $db = getDB();
+
+    $stmt = $db->prepare("
+        SELECT id, email
+        FROM users
+        WHERE email = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        return false;
+    }
+
+    $_SESSION['reset_email'] = $user['email'];
+
+    return true;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email'] ?? '');
+
+    if ($email === '') {
+        $error = 'Please enter your email address.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Please enter a valid email address.';
+    } else {
+        if (startPasswordReset($email)) {
+            header('Location: reset_password.php');
+            exit;
+        }
+
+        $error = 'No account found with this email.';
+    }
 }
 ?>
 
@@ -14,41 +48,27 @@ if (currentUser()) {
 <main>
   <section class="page-header">
     <h1>Forgot Password</h1>
-    <p>Enter your email to reset your password.</p>
+    <p>Enter your registered email to reset your password.</p>
   </section>
 
   <section class="content-section auth-single-layout">
-    <div class="box auth-card">
+    <form class="box auth-card" method="POST" action="forgot_password.php">
       <h2>Reset Request</h2>
 
-      <?php if (isset($_GET['error'])): ?>
-        <div class="auth-message">
-          <?= e($_GET['error']) ?>
-        </div>
+      <?php if ($error): ?>
+        <div class="form-message error"><?= e($error) ?></div>
       <?php endif; ?>
 
-      <?php if (isset($_GET['success'])): ?>
-        <div class="auth-message">
-          <?= e($_GET['success']) ?>
-        </div>
-      <?php endif; ?>
+      <label>Email</label>
+      <input type="email" name="email" required />
 
-      <form action="process_forgot_password.php" method="POST">
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter your email"
-          required
-        />
-
-        <button type="submit" class="btn">Send Reset Link</button>
-      </form>
+      <button class="btn" type="submit">Continue</button>
 
       <p class="auth-switch">
         Remember your password?
-        <a href="login.php">Login</a>
+        <a href="login.php">Back to Login</a>
       </p>
-    </div>
+    </form>
   </section>
 </main>
 

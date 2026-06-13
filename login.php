@@ -2,10 +2,55 @@
 require_once 'includes/init.php';
 
 $pageTitle = 'Login';
+$error = '';
 
-if (currentUser()) {
-    header('Location: profile.php');
-    exit();
+function loginUser($email, $password) {
+    $db = getDB();
+
+    $stmt = $db->prepare("
+        SELECT id, username, email, password_hash
+        FROM users
+        WHERE email = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        return 'notfound';
+    }
+
+    if (!password_verify($password, $user['password_hash'])) {
+        return 'password';
+    }
+
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['username'] = $user['username'];
+    $_SESSION['email'] = $user['email'];
+
+    return true;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if ($email === '' || $password === '') {
+        $error = 'Please enter your email and password.';
+    } else {
+        $result = loginUser($email, $password);
+
+        if ($result === true) {
+            header('Location: index.php');
+            exit;
+        }
+
+        if ($result === 'password') {
+            $error = 'Incorrect password. Please try again.';
+        } else {
+            $error = 'No account found with this email.';
+        }
+    }
 }
 ?>
 
@@ -14,52 +59,34 @@ if (currentUser()) {
 <main>
   <section class="page-header">
     <h1>Login</h1>
-    <p>Access your CineByte account.</p>
+    <p>Access your CineByte account to manage your profile, lists, and journal.</p>
   </section>
 
   <section class="content-section auth-single-layout">
-    <div class="box auth-card">
+    <form class="box auth-card" method="POST" action="login.php">
       <h2>Welcome Back</h2>
 
-      <?php if (isset($_GET['error'])): ?>
-        <div class="auth-message">
-          <?= e($_GET['error']) ?>
-        </div>
+      <?php if ($error): ?>
+        <div class="form-message error"><?= e($error) ?></div>
       <?php endif; ?>
 
-      <?php if (isset($_GET['success'])): ?>
-        <div class="auth-message">
-          <?= e($_GET['success']) ?>
-        </div>
-      <?php endif; ?>
+      <label>Email</label>
+      <input type="email" name="email" required />
 
-      <form action="process_login.php" method="POST">
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          required
-        />
+      <label>Password</label>
+      <input type="password" name="password" required />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-        />
+      <a class="forgot-password-link" href="forgot_password.php">Forgot password?</a>
 
-        <a href="forgot_password.php" class="forgot-password-link">
-          Forgot password?
-        </a>
+      <br>
 
-        <button type="submit" class="btn">Login</button>
-      </form>
+      <button class="btn" type="submit">Login</button>
 
       <p class="auth-switch">
-        Do not have an account?
-        <a href="signup.php">Sign up</a>
+        Don't have an account?
+        <a href="signup.php">Sign Up</a>
       </p>
-    </div>
+    </form>
   </section>
 </main>
 
