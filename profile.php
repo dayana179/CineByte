@@ -1,6 +1,8 @@
 <?php
 require_once 'includes/init.php';
 
+$pageTitle = 'Profile';
+
 if (!isset($_SESSION["user_id"])) {
     header("Location: login.php");
     exit();
@@ -81,48 +83,7 @@ $journalStmt->execute([$userId]);
 $journals = $journalStmt->fetchAll();
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CineByte | Profile</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-
-<body>
-<header class="site-header">
-  <a href="index.html" class="logo">CineByte</a>
-  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-
-  <nav id="mainNav">
-    <a href="index.html">Home</a>
-    <a href="films.php">Films</a>
-    <a href="videos.php">Videos</a>
-    <a href="lists.html">Lists</a>
-    <a href="profile.php">Profile</a>
-
-    <div class="header-search">
-      <button type="button" id="headerSearchToggle" class="header-search-btn" aria-label="Open search">
-        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M10.8 5.2a5.6 5.6 0 1 1 0 11.2a5.6 5.6 0 0 1 0-11.2Zm0-1.7a7.3 7.3 0 1 0 4.55 13.02l3.56 3.56a.9.9 0 0 0 1.27-1.27l-3.56-3.56A7.3 7.3 0 0 0 10.8 3.5Z"/>
-        </svg>
-      </button>
-
-      <div id="headerSearchBox" class="header-search-box">
-        <input
-          type="text"
-          id="headerSearchInput"
-          placeholder="Search films..."
-          autocomplete="off"
-        />
-        <div id="headerSearchResults" class="header-search-results"></div>
-      </div>
-    </div>
-
-    <a href="logout.php" id="authNav">Logout</a>
-  </nav>
-</header>
+<?php include 'includes/header.php'; ?>
 
 <main>
   <section class="page-header">
@@ -187,7 +148,7 @@ $journals = $journalStmt->fetchAll();
                         ? "https://image.tmdb.org/t/p/w500" . $item["poster_path"]
                         : "https://via.placeholder.com/500x750?text=No+Poster";
 
-                    $detailLink = "film-detail.php?id=" . urlencode($item["tmdb_id"]);
+                    $detailLink = "film-detail.php?type=film&id=" . urlencode($item["tmdb_id"]);
                 }
               ?>
 
@@ -199,19 +160,19 @@ $journals = $journalStmt->fetchAll();
                 </a>
 
                 <form method="POST" onsubmit="return confirm('Remove this item from your watchlist?');">
-                <input type="hidden" name="action" value="remove_watchlist">
-                <input type="hidden" name="content_type" value="<?= e($type) ?>">
+                  <input type="hidden" name="action" value="remove_watchlist">
+                  <input type="hidden" name="content_type" value="<?= e($type) ?>">
 
-                <?php if ($type === "video"): ?>
-                  <input type="hidden" name="youtube_id" value="<?= e($item["youtube_id"]) ?>">
-                <?php else: ?>
-                  <input type="hidden" name="tmdb_id" value="<?= e($item["tmdb_id"]) ?>">
-                <?php endif; ?>
+                  <?php if ($type === "video"): ?>
+                    <input type="hidden" name="youtube_id" value="<?= e($item["youtube_id"]) ?>">
+                  <?php else: ?>
+                    <input type="hidden" name="tmdb_id" value="<?= e($item["tmdb_id"]) ?>">
+                  <?php endif; ?>
 
-                <button type="submit" class="remove-watchlist-btn">
-                  Remove
-                </button>
-              </form> 
+                  <button type="submit" class="remove-watchlist-btn">
+                    Remove
+                  </button>
+                </form>
               </article>
             <?php endforeach; ?>
           </div>
@@ -323,29 +284,6 @@ $journals = $journalStmt->fetchAll();
   </section>
 </main>
 
-<footer> 
-  <p>&copy; 2026 CineByte. Web Design Project.</p>
-</footer>
-<div id="journalSearchModal" class="journal-modal">
-    <div class="journal-modal-box">
-      <div class="journal-modal-header">
-        <h2>Add to your journal...</h2>
-        <button id="journalModalClose" class="journal-modal-close" type="button">×</button>
-      </div>
 
-      <div class="journal-modal-body">
-        <input
-          type="text"
-          id="journalSearchInput"
-          placeholder="Search for film..."
-          autocomplete="off"
-        />
 
-        <div id="journalSearchResults" class="journal-modal-results"></div>
-      </div>
-    </div>
-  </div>
-
-<script src="script.js"></script>
-</body>
-</html>
+<?php include 'includes/footer.php'; ?>

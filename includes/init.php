@@ -29,14 +29,38 @@ function requireLogin(): void {
     if (!isLoggedIn()) redirect('auth.php');
 }
 
-function tmdbFetch(string $endpoint, array $params = []): array {
-    $params['api_key']  = TMDB_API_KEY;
-    $params['language'] = 'en-US';
-    $url = TMDB_BASE_URL . $endpoint . '?' . http_build_query($params);
-    $ctx  = stream_context_create(['http' => ['timeout' => 5]]);
-    $json = @file_get_contents($url, false, $ctx);
-    if ($json === false) return [];
-    return json_decode($json, true) ?? [];
+function tmdbFetch($endpoint, $params = [])
+{
+    $apiKey = "ff3e44517aba3b3a85c940344177b06d";
+    $baseUrl = "https://api.themoviedb.org/3";
+
+    if (!str_starts_with($endpoint, "/")) {
+        $endpoint = "/" . $endpoint;
+    }
+
+    $params["api_key"] = $apiKey;
+
+    $url = $baseUrl . $endpoint . "?" . http_build_query($params);
+
+    $response = @file_get_contents($url);
+
+    if ($response === false) {
+        return [
+            "status_code" => 500,
+            "status_message" => "Unable to connect to TMDB"
+        ];
+    }
+
+    $data = json_decode($response, true);
+
+    if (!is_array($data)) {
+        return [
+            "status_code" => 500,
+            "status_message" => "Invalid TMDB response"
+        ];
+    }
+
+    return $data;
 }
 
 function e(string $str): string {

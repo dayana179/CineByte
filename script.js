@@ -102,7 +102,7 @@ function createMovieCard(movie) {
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "N/A";
 
   card.innerHTML = `
-    <a href="film-detail.html?id=${movie.id}">
+    <a href="film-detail.php?type=film&id=${movie.id}">
       <img src="${getPosterPath(movie)}" alt="${movie.title}">
       <h3>${movie.title}</h3>
       <p>${getMovieYear(movie)} • ⭐ ${rating}</p>
@@ -119,7 +119,7 @@ function createPosterCard(movie) {
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "N/A";
 
   card.innerHTML = `
-    <a href="film-detail.html?id=${movie.id}">
+    <a href="film-detail.php?type=film&id=${movie.id}">
       <img src="${getPosterPath(movie)}" alt="${movie.title}">
       <h3>${movie.title}</h3>
       <p>${getMovieYear(movie)} • ⭐ ${rating}</p>
@@ -207,7 +207,7 @@ function setupHeaderSearch() {
       const query = searchInput.value.trim();
 
       if (query.length > 0) {
-        window.location.href = `films.html?search=${encodeURIComponent(query)}`;
+        window.location.href = `films.php?search=${encodeURIComponent(query)}`;
       }
     }
   });
@@ -238,7 +238,7 @@ async function searchHeaderMovies(query) {
     results.forEach((movie) => {
       const item = document.createElement("a");
       item.classList.add("header-result-item");
-      item.href = `film-detail.html?id=${movie.id}`;
+      item.href = `film-detail.php?id=${movie.id}`;
 
       item.innerHTML = `
         <img src="${getPosterPath(movie)}" alt="${movie.title}">
@@ -253,7 +253,7 @@ async function searchHeaderMovies(query) {
 
     const viewAll = document.createElement("a");
     viewAll.classList.add("header-result-item");
-    viewAll.href = `films.html?search=${encodeURIComponent(query)}`;
+    viewAll.href = `films.php?search=${encodeURIComponent(query)}`;
     viewAll.innerHTML = `
       <div class="header-result-info">
         <h4>View all results for "${query}"</h4>
@@ -739,6 +739,7 @@ async function loadMovieDetails() {
   }
 }
 
+
 // =====================
 // LISTS PAGE: CATEGORIES + DATABASE USER LISTS
 // =====================
@@ -921,7 +922,7 @@ function createListMovieCard(movie) {
   }
 
   card.innerHTML = `
-    <a href="film-detail.html?id=${movie.id}">
+    <a href="film-detail.php?type=film&id=${movie.id}">
       <img src="${getPosterPath(movie)}" alt="${movie.title}">
       <h3>${movie.title}</h3>
       <p>${getMovieYear(movie)} • ⭐ ${rating}</p>
@@ -1134,7 +1135,7 @@ function renderUserLists() {
 
               return `
                 <div class="list-movie-preview">
-                  <a href="film-detail.html?id=${movie.tmdb_id}">
+                  <a href="film-detail.php?type=film&id=${movie.tmdb_id}">
                     <img src="${poster}" alt="${movie.title}">
                   </a>
                   <button
@@ -1668,6 +1669,54 @@ document.addEventListener("click", function (event) {
   }
 });
 
+// =====================
+// PROFILE WATCHLIST REMOVE
+// =====================
+function setupProfileWatchlistRemove() {
+  const removeButtons = document.querySelectorAll(".remove-watchlist-btn");
+
+  if (!removeButtons.length) return;
+
+  removeButtons.forEach((button) => {
+    button.addEventListener("click", async function () {
+      const tmdbId = button.dataset.tmdbId;
+
+      if (!tmdbId) {
+        alert("Movie ID not found.");
+        return;
+      }
+
+      const confirmRemove = confirm("Remove this movie from your watchlist?");
+
+      if (!confirmRemove) return;
+
+      try {
+        const res = await fetch("api/watchlist.php?action=remove", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            tmdb_id: tmdbId
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          button.closest(".watchlist-card")?.remove();
+          alert(data.message || "Movie removed from watchlist.");
+        } else {
+          alert(data.message || "Unable to remove movie.");
+        }
+      } catch (err) {
+        console.error("Remove watchlist error:", err);
+        alert("Unable to remove movie from watchlist.");
+      }
+    });
+  });
+}
 
 // =====================
 // INIT

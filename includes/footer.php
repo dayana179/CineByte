@@ -9,15 +9,20 @@
     </div>
 
     <div class="journal-modal-body">
-      <input
-        type="text"
-        id="journalSearchInput"
-        placeholder="Search for film..."
-        autocomplete="off"
-      />
+  <input
+    type="text"
+    id="journalSearchInput"
+    placeholder="Search for film..."
+    autocomplete="off"
+  />
 
-      <div id="journalSearchResults" class="journal-modal-results"></div>
-    </div>
+  <div class="journal-video-link">
+    <span>or</span>
+    <a href="videos.php">log your YouTube videos</a>
+  </div>
+
+  <div id="journalSearchResults" class="journal-modal-results"></div>
+</div>
   </div>
 </div>
 

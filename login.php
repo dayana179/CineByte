@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <?php endif; ?>
 
       <label>Email</label>
-      <input type="email" name="email" required />
+      <input type="email" name="email" autocomplete="email" required />
 
       <label>Password</label>
       <input type="password" name="password" required />
@@ -91,3 +91,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </main>
 
 <?php include 'includes/footer.php'; ?>
+
+<script>
+  window.addEventListener("pageshow", function () {
+    const passwordInput = document.querySelector('input[name="password"]');
+
+    if (passwordInput) {
+      passwordInput.value = "";
+    }
+  });
+</script>

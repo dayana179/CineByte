@@ -1539,3 +1539,38 @@ html {
   color: #ff4b2b;
   font-weight: 700;
 }
+
+.journal-video-link {
+  margin: 12px 0 6px;
+  text-align: center;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.journal-video-link span {
+  margin-right: 4px;
+}
+
+.journal-video-link a {
+  color: #8da6ff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.journal-video-link a:hover {
+  text-decoration: underline;
+}
+
+/*no trailer found*/
+.no-trailer-box {
+  width: 100%;
+  min-height: 180px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #b8b8c8;
+  font-size: 1rem;
+}

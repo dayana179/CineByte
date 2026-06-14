@@ -1,91 +1,65 @@
 <?php
 require_once 'includes/init.php';
-requireLogin();
 
 $pageTitle = 'Journal';
 
+if (!isset($_SESSION["user_id"])) {
+    header("Location: login.php");
+    exit();
+}
+
 $db = getDB();
-$msg = '';
 
-$contentType = $_GET['type'] ?? $_POST['content_type'] ?? 'film';
+$userId = $_SESSION["user_id"];
 
-$tmdb_id = (int)($_GET['tmdb_id'] ?? $_POST['tmdb_id'] ?? 0);
-$youtube_id = $_GET['youtube'] ?? $_POST['youtube_id'] ?? '';
+$tmdbId = isset($_GET["tmdb_id"]) ? (int) $_GET["tmdb_id"] : null;
+$youtubeId = $_GET["youtube_id"] ?? ($_GET["youtube"] ?? null);
+$contentType = $_GET["type"] ?? (!empty($youtubeId) ? "video" : "film");
 
-$movie = [];
+$title = $_GET["title"] ?? "";
+$poster = $_GET["poster"] ?? "";
 
-if ($contentType === 'film' && $tmdb_id > 0) {
-    $movie = tmdbFetch("/movie/$tmdb_id");
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $contentType = $_POST["content_type"] ?? "film";
+    $title = trim($_POST["title"] ?? "");
+    $rating = (int) ($_POST["rating"] ?? 0);
+    $review = trim($_POST["review"] ?? "");
+
+    $tmdbId = !empty($_POST["tmdb_id"]) ? (int) $_POST["tmdb_id"] : null;
+    $youtubeId = !empty($_POST["youtube_id"]) ? $_POST["youtube_id"] : null;
+
+    if ($title === "" || $rating < 1 || $rating > 10 || $review === "") {
+        $error = "Please complete all fields correctly.";
+    } else {
+        $stmt = $db->prepare("
+            INSERT INTO journals
+            (user_id, tmdb_id, youtube_id, content_type, title, rating, review)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+
+        $stmt->execute([
+            $userId,
+            $tmdbId,
+            $youtubeId,
+            $contentType,
+            $title,
+            $rating,
+            $review
+        ]);
+
+        header("Location: profile.php#journal");
+        exit();
+    }
 }
 
-if ($contentType === 'video') {
-    $selectedTitle = $_GET['title'] ?? $_POST['title'] ?? 'YouTube Video';
-    $selectedPoster = $_GET['poster'] ?? $_POST['poster_path'] ?? '';
-
-    if ($selectedPoster === '' && $youtube_id !== '') {
-        $selectedPoster = "https://img.youtube.com/vi/" . $youtube_id . "/hqdefault.jpg";
-    }
+if ($contentType === "video") {
+    $displayPoster = !empty($youtubeId)
+        ? "https://img.youtube.com/vi/" . $youtubeId . "/hqdefault.jpg"
+        : "https://via.placeholder.com/500x750?text=No+Thumbnail";
 } else {
-    $selectedTitle = $movie['title'] ?? ($_GET['title'] ?? $_POST['title'] ?? '');
-    $selectedPoster = $movie['poster_path'] ?? ($_GET['poster'] ?? $_POST['poster_path'] ?? '');
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $contentType = $_POST['content_type'] ?? 'film';
-    $title = trim($_POST['title'] ?? '');
-    $rating = (int)($_POST['rating'] ?? 0);
-    $review = trim($_POST['review'] ?? '');
-    $tmdb_id = (int)($_POST['tmdb_id'] ?? 0);
-    $youtube_id = trim($_POST['youtube_id'] ?? '');
-    $poster_path = trim($_POST['poster_path'] ?? '');
-
-    if ($contentType === 'film') {
-        if ($title === '' || $tmdb_id <= 0 || $rating < 1 || $rating > 10 || $review === '') {
-            $msg = "Please choose a movie and complete all journal fields.";
-        } else {
-            $stmt = $db->prepare("
-                INSERT INTO journals
-                (user_id, content_type, tmdb_id, youtube_id, title, poster_path, rating, review)
-                VALUES (?, ?, ?, NULL, ?, ?, ?, ?)
-            ");
-
-            $stmt->execute([
-                $_SESSION['user_id'],
-                'film',
-                $tmdb_id,
-                $title,
-                $poster_path,
-                $rating,
-                $review
-            ]);
-
-            $msg = "Journal added!";
-        }
-    }
-
-    if ($contentType === 'video') {
-        if ($title === '' || $youtube_id === '' || $rating < 1 || $rating > 10 || $review === '') {
-            $msg = "Please choose a YouTube video and complete all journal fields.";
-        } else {
-            $stmt = $db->prepare("
-                INSERT INTO journals
-                (user_id, content_type, tmdb_id, youtube_id, title, poster_path, rating, review)
-                VALUES (?, ?, NULL, ?, ?, ?, ?, ?)
-            ");
-
-            $stmt->execute([
-                $_SESSION['user_id'],
-                'video',
-                $youtube_id,
-                $title,
-                $poster_path,
-                $rating,
-                $review
-            ]);
-
-            $msg = "Journal added!";
-        }
-    }
+    $displayPoster = !empty($poster)
+        ? "https://image.tmdb.org/t/p/w500" . $poster
+        : "https://via.placeholder.com/500x750?text=No+Poster";
 }
 ?>
 
@@ -93,117 +67,100 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <main>
   <section class="page-header">
-    <h1>Journal</h1>
-    <p>Record what you watched and write your personal viewing notes.</p>
+    <h1>Add Journal</h1>
+    <p>Write a review and rating for a film or video.</p>
   </section>
 
-  <section class="content-section journal-layout journal-full-width">
-    <form method="POST" class="box journal-form-box">
-
-      <?php if (!empty($msg)): ?>
-        <p class="auth-message"><?= e($msg) ?></p>
+  <section class="content-section journal-layout">
+    <div class="box journal-form-box journal-full-width">
+      <?php if (!empty($error)): ?>
+        <div class="auth-message">
+          <?= e($error) ?>
+        </div>
       <?php endif; ?>
 
       <div class="journal-content">
-
-        <div class="journal-poster-area">
-          <?php if (!empty($selectedPoster)): ?>
-
-            <?php if ($contentType === 'video'): ?>
-              <img
-                class="journal-poster"
-                src="<?= e($selectedPoster) ?>"
-                alt="<?= e($selectedTitle) ?>"
-              >
-            <?php else: ?>
-              <img
-                class="journal-poster"
-                src="<?= e(TMDB_IMAGE_BASE . $selectedPoster) ?>"
-                alt="<?= e($selectedTitle) ?>"
-              >
-            <?php endif; ?>
-
-          <?php else: ?>
-            <div class="journal-poster-placeholder">
-              No Poster
-            </div>
-          <?php endif; ?>
+        <div>
+          <img
+            src="<?= e($displayPoster) ?>"
+            alt="<?= e($title ?: 'Selected title') ?>"
+            class="journal-poster"
+          />
         </div>
 
         <div class="journal-form-area">
+          <h2><?= e($title ?: 'Selected Title') ?></h2>
 
-          <h2>
-            Add <?= $contentType === 'video' ? 'YouTube Video' : 'Film' ?> Journal
-          </h2>
+          <form method="POST">
+            <input
+              type="hidden"
+              name="content_type"
+              value="<?= e($contentType) ?>"
+            />
 
-          <label>
-            <?= $contentType === 'video' ? 'YouTube Video' : 'Movie' ?>
-          </label>
+            <input
+              type="hidden"
+              name="tmdb_id"
+              value="<?= e($tmdbId ?? '') ?>"
+            />
 
-          <input
-            type="text"
-            value="<?= e($selectedTitle) ?>"
-            readonly
-          >
+            <input
+              type="hidden"
+              name="youtube_id"
+              value="<?= e($youtubeId ?? '') ?>"
+            />
 
-          <input
-            type="hidden"
-            name="content_type"
-            value="<?= e($contentType) ?>"
-          >
+            <input
+              type="hidden"
+              name="title"
+              value="<?= e($title) ?>"
+            />
 
-          <input
-            type="hidden"
-            name="title"
-            value="<?= e($selectedTitle) ?>"
-          >
+            <label for="rating">Rating out of 10</label>
+            <input
+              type="number"
+              id="rating"
+              name="rating"
+              min="1"
+              max="10"
+              placeholder="e.g. 8"
+              required
+            />
 
-          <input
-            type="hidden"
-            name="tmdb_id"
-            value="<?= (int)$tmdb_id ?>"
-          >
+            <label for="review">Review</label>
+            <textarea
+              id="review"
+              name="review"
+              placeholder="Write your thoughts here..."
+              required
+            ></textarea>
 
-          <input
-            type="hidden"
-            name="youtube_id"
-            value="<?= e($youtube_id) ?>"
-          >
-
-          <input
-            type="hidden"
-            name="poster_path"
-            value="<?= e($selectedPoster) ?>"
-          >
-
-          <label>Your Rating (/10)</label>
-
-          <input
-            type="number"
-            name="rating"
-            min="1"
-            max="10"
-            required
-          >
-
-          <label>Review</label>
-
-          <textarea
-            name="review"
-            rows="6"
-            required
-          ></textarea>
-
-          <button class="btn" type="submit">
-            Save Journal
-          </button>
-
+            <button type="submit" class="btn">Save Journal</button>
+          </form>
         </div>
-
       </div>
-
-    </form>
+    </div>
   </section>
 </main>
+
+<div id="journalSearchModal" class="journal-modal">
+  <div class="journal-modal-box">
+    <div class="journal-modal-header">
+      <h2>Add to your journal...</h2>
+      <button id="journalModalClose" class="journal-modal-close" type="button">×</button>
+    </div>
+
+    <div class="journal-modal-body">
+      <input
+        type="text"
+        id="journalSearchInput"
+        placeholder="Search for film..."
+        autocomplete="off"
+      />
+
+      <div id="journalSearchResults" class="journal-modal-results"></div>
+    </div>
+  </div>
+</div>
 
 <?php include 'includes/footer.php'; ?>

@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </section>
 
   <section class="content-section auth-single-layout">
-    <form class="box auth-card" method="POST" action="signup.php">
+    <form class="box auth-card" method="POST" action="signup.php" autocomplete="off">
       <h2>Sign Up</h2>
 
       <?php if ($error): ?>
@@ -75,13 +75,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <?php endif; ?>
 
       <label>Username</label>
-      <input type="text" name="username" required />
+      <input type="text" name="username" autocomplete="off" required />
 
       <label>Email</label>
-      <input type="email" name="email" required />
+      <input type="email" name="email" autocomplete="off" required />
 
       <label>Password</label>
-      <input type="password" name="password" minlength="6" required />
+      <input type="password" name="password" minlength="6" autocomplete="new-password" required />
 
       <button class="btn" type="submit">Create Account</button>
 
