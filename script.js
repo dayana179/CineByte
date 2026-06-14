@@ -70,7 +70,7 @@ async function updateAuthNav() {
   } catch (err) {
     console.error("Auth status error:", err);
     authNav.textContent = "Login";
-    authNav.href = "login.html";
+    authNav.href = "login.php";
     authNav.classList.remove("journal-open-btn");
     authNav.onclick = null;
   }
@@ -669,7 +669,7 @@ async function addToWatchlist() {
 
   if (!getLoggedInUserId()) {
     alert("Please login first before adding to watchlist.");
-    window.location.href = "login.html";
+    window.location.href = "login.php";
     return;
   }
 
@@ -956,7 +956,7 @@ async function createDatabaseList(listName) {
 
   if (!getLoggedInUserId()) {
     alert("Please login first before creating a list.");
-    window.location.href = "login.html";
+    window.location.href = "login.php";
     return;
   }
 
@@ -1465,7 +1465,7 @@ function setupCreateListPage() {
 
       if (data.success) {
         alert("List created successfully.");
-        window.location.href = "lists.html";
+        window.location.href = "lists.php";
       } else {
         alert(data.message || "Unable to create list.");
       }
